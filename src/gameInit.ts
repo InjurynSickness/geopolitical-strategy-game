@@ -5,6 +5,9 @@ import { GameEngine } from './game/GameEngine.js';
 import { GameStateInitializer } from './game/GameStateInitializer.js';
 import { UIManager } from './ui/UIManager.js';
 import { SaveLoadManager } from './game/SaveLoadManager.js';
+import { ProvinceMap } from './provinceMap.js';
+import { provinceToCountryMap } from './provinceAssignments.js';
+import { countryData } from './countryData.js';
 
 export function initializeFullGame(): void {
     try {
@@ -12,45 +15,46 @@ export function initializeFullGame(): void {
 
         // 1. Initialize game state
         const gameState = GameStateInitializer.initializeGameState();
-        console.log('Game state initialized');
+        console.log('Game state initialized with', gameState.countries.size, 'countries');
 
-    // 2. Create game engine
-    const gameEngine = new GameEngine(gameState);
-    console.log('Game engine created');
+        // 2. Create game engine
+        const gameEngine = new GameEngine(gameState);
+        console.log('Game engine created');
 
-    // 3. Create game container (if it doesn't exist)
-    let gameContainer = document.getElementById('game-container');
-    if (!gameContainer) {
-        gameContainer = document.createElement('div');
-        gameContainer.id = 'game-container';
-        gameContainer.style.position = 'fixed';
-        gameContainer.style.top = '0';
-        gameContainer.style.left = '0';
-        gameContainer.style.width = '100%';
-        gameContainer.style.height = '100%';
-        gameContainer.style.zIndex = '1';
-        gameContainer.style.backgroundColor = '#1a1a1a';
-        document.body.appendChild(gameContainer);
-    }
-    gameContainer.style.display = 'block';
+        // 3. Create game container (if it doesn't exist)
+        let gameContainer = document.getElementById('game-container');
+        if (!gameContainer) {
+            gameContainer = document.createElement('div');
+            gameContainer.id = 'game-container';
+            gameContainer.style.position = 'fixed';
+            gameContainer.style.top = '0';
+            gameContainer.style.left = '0';
+            gameContainer.style.width = '100%';
+            gameContainer.style.height = '100%';
+            gameContainer.style.zIndex = '1';
+            gameContainer.style.backgroundColor = '#1a1a1a';
+            document.body.appendChild(gameContainer);
+        }
+        gameContainer.style.display = 'block';
+        console.log('Game container created');
 
-    // 4. Create a simple canvas for the game
-    let canvas = gameContainer.querySelector('canvas') as HTMLCanvasElement;
-    if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.style.position = 'absolute';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        canvas.style.backgroundColor = '#1a2332';
-        gameContainer.appendChild(canvas);
-    }
-    console.log('Canvas created');
+        // 4. Create the province map with full rendering
+        const provinceMap = new ProvinceMap(
+            gameContainer,
+            (countryId: string) => {
+                const gameState = gameEngine.getGameState();
+                gameState.selectedCountryId = countryId;
+                uiManager.updateCountryInfo();
+            }
+        );
+        console.log('Province map created, loading assets...');
 
-    // 5. Create UI manager
+        // 5. Set up the map with country data
+        provinceMap.updateCountries(gameState.countries, countryData);
+        provinceMap.setProvinceOwnerMap(provinceToCountryMap);
+        console.log('Map configured with countries and province assignments');
+
+        // 6. Create UI manager
     const uiManager = new UIManager(
         () => gameEngine.getGameState(),
         (slot: number) => {
@@ -64,6 +68,7 @@ export function initializeFullGame(): void {
                 const newEngine = new GameEngine(loadedState);
                 (window as any).gameEngine = newEngine;
                 newEngine.startGameLoop(() => {
+                    provinceMap.forceRender();
                     uiManager.updateDisplay();
                 });
                 uiManager.showNotification(`Game loaded from slot ${slot}`, 'success');
@@ -72,71 +77,68 @@ export function initializeFullGame(): void {
         () => { /* Test event handler */ }
     );
 
-    // 6. Setup UI elements (create them if they don't exist)
-    createGameUI();
+        // 7. Setup UI elements (create them if they don't exist)
+        createGameUI();
 
-    // 7. Setup UI callbacks
-    uiManager.setupUI(
-        () => {
-            gameEngine.togglePause();
-            uiManager.updatePauseButton(gameEngine.getGameState().isPaused);
-        },
-        (speed: number) => {
-            gameEngine.setGameSpeed(speed);
-            uiManager.updateSpeedButtons(speed);
-        },
-        () => { /* Toggle editor */ },
-        () => {
-            // Return to main menu
-            gameEngine.stopGameLoop();
-            gameContainer!.style.display = 'none';
-            const gameUI = document.getElementById('gameUI');
-            if (gameUI) gameUI.style.display = 'none';
-            const root = document.getElementById('root');
-            if (root) root.style.display = 'block';
-        },
-        (provinceId: string) => {
-            // Province selection handler
-            uiManager.updateCountryInfo();
-        }
-    );
-    console.log('UI manager setup complete');
+        // 8. Setup UI callbacks
+        uiManager.setupUI(
+            () => {
+                gameEngine.togglePause();
+                uiManager.updatePauseButton(gameEngine.getGameState().isPaused);
+            },
+            (speed: number) => {
+                gameEngine.setGameSpeed(speed);
+                uiManager.updateSpeedButtons(speed);
+            },
+            () => {
+                // Toggle editor mode
+                const currentMode = provinceMap ? !provinceMap.isMapReady() : false;
+                if (provinceMap) {
+                    provinceMap.setEditorMode(!currentMode);
+                }
+            },
+            () => {
+                // Return to main menu
+                gameEngine.stopGameLoop();
+                gameContainer!.style.display = 'none';
+                const gameUI = document.getElementById('gameUI');
+                if (gameUI) gameUI.style.display = 'none';
+                const root = document.getElementById('root');
+                if (root) root.style.display = 'block';
+                // Clean up the province map
+                if (provinceMap) {
+                    provinceMap.destroy();
+                }
+            },
+            (provinceId: string) => {
+                // Province selection handler
+                if (provinceMap && provinceId) {
+                    provinceMap.setSelectedCountry(provinceId);
+                }
+                uiManager.updateCountryInfo(provinceId, provinceToCountryMap);
+            }
+        );
+        console.log('UI manager setup complete');
 
-    // 8. Draw a simple placeholder message on the canvas
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-        ctx.fillStyle = '#1a2332';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // 9. Start game loop
+        gameEngine.startGameLoop(() => {
+            if (provinceMap.isMapReady()) {
+                provinceMap.forceRender();
+            }
+            uiManager.updateDisplay();
+        });
+        console.log('Game loop started');
 
-        ctx.fillStyle = '#d4af37';
-        ctx.font = 'bold 48px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Game Started!', canvas.width / 2, canvas.height / 2 - 50);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '24px Arial';
-        ctx.fillText('Full map rendering coming soon...', canvas.width / 2, canvas.height / 2 + 20);
-
-        ctx.font = '18px Arial';
-        ctx.fillStyle = '#888';
-        ctx.fillText('Use the controls at the bottom to play/pause and adjust game speed', canvas.width / 2, canvas.height / 2 + 60);
-    }
-
-    // 9. Start game loop
-    gameEngine.startGameLoop(() => {
+        // 10. Initial UI update
         uiManager.updateDisplay();
-    });
-    console.log('Game loop started');
-
-    // 10. Initial UI update
-    uiManager.updateDisplay();
-    uiManager.updatePauseButton(gameState.isPaused);
-    uiManager.updateSpeedButtons(gameState.gameSpeed);
+        uiManager.updatePauseButton(gameState.isPaused);
+        uiManager.updateSpeedButtons(gameState.gameSpeed);
 
         // 11. Expose game engine globally for debugging and save/load
         (window as any).gameEngine = gameEngine;
+        (window as any).provinceMap = provinceMap;
 
-        console.log('Game initialization complete!');
+        console.log('Game initialization complete! Map will render when assets are loaded.');
     } catch (error) {
         console.error('FATAL ERROR in initializeFullGame:', error);
         console.error('Error stack:', (error as Error).stack);
