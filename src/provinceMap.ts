@@ -20,6 +20,7 @@ const MAP_HEIGHT = 2160;
 export class ProvinceMap {
     private container: HTMLElement;
     private onCountrySelect: (countryId: string) => void;
+    private onMapReady?: () => void;
 
     private canvasManager: CanvasManager;
     private cameraController: CameraController;
@@ -53,9 +54,10 @@ export class ProvinceMap {
     private pulseOpacity: number = 0.7;
     private pulseColor: string = "255, 255, 240";
 
-    constructor(container: HTMLElement, onCountrySelect: (countryId: string) => void) {
+    constructor(container: HTMLElement, onCountrySelect: (countryId: string) => void, onMapReady?: () => void) {
         this.container = container;
         this.onCountrySelect = onCountrySelect;
+        this.onMapReady = onMapReady;
         
         this.canvasManager = new CanvasManager(container, MAP_WIDTH, MAP_HEIGHT);
         this.cameraController = new CameraController(
@@ -108,8 +110,17 @@ export class ProvinceMap {
                 this.mapReady = true;
 
                 this.processTerrainImage();
-                this.buildPoliticalMap(); 
+                this.buildPoliticalMap();
                 this.buildBorderMap();
+
+                // Render the map initially
+                this.render();
+                console.log("Map rendered for the first time.");
+
+                // Notify that map is ready
+                if (this.onMapReady) {
+                    this.onMapReady();
+                }
             }
         };
 

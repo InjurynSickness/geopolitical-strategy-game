@@ -50,6 +50,13 @@ export function initializeFullGame(): void {
                 if (uiManager) {
                     uiManager.updateCountryInfo();
                 }
+            },
+            () => {
+                // Called when map is ready - this will be used by App.tsx
+                console.log('Map is ready callback triggered');
+                if ((window as any).onMapReady) {
+                    (window as any).onMapReady();
+                }
             }
         );
         console.log('Province map created, loading assets...');

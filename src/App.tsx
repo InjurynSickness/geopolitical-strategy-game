@@ -62,20 +62,29 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
     setTimeout(() => {
         try {
           console.log("Calling initializeGame()...");
-          initializeGame(); // Creates window.gameEngine
-          console.log("initializeGame() completed successfully");
-          loadingScreen.updateProgress(100, "Done!");
 
-          setTimeout(() => {
-            loadingScreen.hide();
-            // Hide React UI
-            const root = document.getElementById('root');
-            if (root) (root as HTMLElement).style.display = 'none';
-          }, 300);
+          // Set up callback for when map is ready
+          (window as any).onMapReady = () => {
+            console.log("Map ready - hiding loading screen");
+            loadingScreen.updateProgress(100, "Done!");
+
+            setTimeout(() => {
+              loadingScreen.hide();
+              // Hide React UI
+              const root = document.getElementById('root');
+              if (root) (root as HTMLElement).style.display = 'none';
+              // Clean up callback
+              delete (window as any).onMapReady;
+            }, 300);
+          };
+
+          initializeGame(); // Creates window.gameEngine and starts loading map
+          console.log("initializeGame() completed successfully - waiting for map to load...");
         } catch (error) {
           console.error("Error initializing game:", error);
           loadingScreen.hide();
           alert("Failed to initialize game. Check console for details.\n\n" + error);
+          delete (window as any).onMapReady;
         }
     }, 1500);
   };
@@ -93,19 +102,26 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
      setTimeout(() => loadingScreen.updateProgress(90, "Almost done..."), 600);
 
      setTimeout(() => {
-         initializeGame(); // Creates window.gameEngine
+         // Set up callback for when map is ready
+         (window as any).onMapReady = () => {
+           console.log("Map ready - loading save and hiding loading screen");
 
-         // Load the saved game state into the engine
-         (window as any).gameEngine?.loadGameFromSlot(slotNumber);
+           // Load the saved game state into the engine
+           (window as any).gameEngine?.loadGameFromSlot(slotNumber);
 
-         loadingScreen.updateProgress(100, "Loaded!");
+           loadingScreen.updateProgress(100, "Loaded!");
 
-         setTimeout(() => {
-           loadingScreen.hide();
-           // Hide React UI
-           const root = document.getElementById('root');
-           if (root) (root as HTMLElement).style.display = 'none';
-         }, 300);
+           setTimeout(() => {
+             loadingScreen.hide();
+             // Hide React UI
+             const root = document.getElementById('root');
+             if (root) (root as HTMLElement).style.display = 'none';
+             // Clean up callback
+             delete (window as any).onMapReady;
+           }, 300);
+         };
+
+         initializeGame(); // Creates window.gameEngine and starts loading map
      }, 900);
   };
 
