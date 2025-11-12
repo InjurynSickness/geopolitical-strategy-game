@@ -1,62 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MenuButton } from "./MenuButton";
-import { Trash2 } from "lucide-react"; // <-- FIXED
+import { Trash2 } from "lucide-react";
 
 interface SaveGame {
   id: string;
   name: string;
   date: string;
   country: string;
-  flagColor: string; // Placeholder for flag
+  flagColor: string;
 }
-
-// MOCK_SAVES has been removed
 
 interface LoadGameMenuProps {
   onBack: () => void;
-  onLoad: (saveGame: SaveGame) => void;
-  gameCoordinator: any;
+  onConfirmLoad: () => void;
 }
 
-export function LoadGameMenu({ onBack, onLoad, gameCoordinator }: LoadGameMenuProps) {
+export function LoadGameMenu({ onBack, onConfirmLoad }: LoadGameMenuProps) {
   const [activeTab, setActiveTab] = useState<"local" | "cloud">("local");
   const [selectedSave, setSelectedSave] = useState<SaveGame | null>(null);
-  const [saves, setSaves] = useState<SaveGame[]>([]); 
 
-  useEffect(() => {
-    if (activeTab === "local") {
-      const realSaves: SaveGame[] = gameCoordinator.getSaveSlotsData();
-      setSaves(realSaves);
-      if (!selectedSave && realSaves.length > 0) {
-          const autoSave = realSaves.find(s => s.id === "0");
-          if (autoSave) {
-              setSelectedSave(autoSave);
-          } else {
-              setSelectedSave(realSaves[0]); 
-          }
-      }
-    } else {
-      setSaves([]); 
-      setSelectedSave(null);
-    }
-  }, [activeTab, gameCoordinator]);
+  // Mock saves for now - will be replaced with real data later
+  const mockSaves: SaveGame[] = [
+    { id: "1", name: "Germany - 1936", date: "Nov 12, 2025 9:30 PM", country: "Germany", flagColor: "#CC0000" },
+    { id: "2", name: "France - 1937", date: "Nov 11, 2025 8:15 PM", country: "France", flagColor: "#0055A4" },
+    { id: "3", name: "USA - 1938", date: "Nov 10, 2025 7:00 PM", country: "USA", flagColor: "#B22234" },
+  ];
 
-  const handleDelete = (saveId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    gameCoordinator.deleteSaveSlot(Number(saveId));
-    
-    const newSaves = saves.filter(save => save.id !== saveId);
-    setSaves(newSaves);
-    
-    if (selectedSave?.id === saveId) {
-      setSelectedSave(newSaves.length > 0 ? newSaves[0] : null);
-    }
-  };
+  const saves = activeTab === "local" ? mockSaves : [];
 
   return (
-    <div className="relative w-full h-screen flex items-center justify-center">
-      <div className="relative w-[420px] bg-gradient-to-b from-stone-900/95 to-black/95 border-2 border-amber-900/60 shadow-2xl">
+    <div className="relative w-full h-screen flex items-center justify-center bg-cover bg-center"
+         style={{ backgroundImage: "url('/terrain.png')" }}>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      <div className="relative z-10 w-[420px] bg-gradient-to-b from-stone-900/95 to-black/95 border-2 border-amber-900/60 shadow-2xl">
         {/* Corner decorations */}
         <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-700/80" />
         <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-amber-700/80" />
@@ -89,7 +67,7 @@ export function LoadGameMenu({ onBack, onLoad, gameCoordinator }: LoadGameMenuPr
 
         {/* Save games list */}
         <div className="p-3">
-          <div 
+          <div
             className="relative bg-black/80 border border-amber-900/40 min-h-[380px] max-h-[380px] overflow-y-auto"
             style={{
               backgroundImage: `repeating-linear-gradient(
@@ -120,7 +98,7 @@ export function LoadGameMenu({ onBack, onLoad, gameCoordinator }: LoadGameMenuPr
                     }`}
                   >
                     {/* Flag placeholder */}
-                    <div 
+                    <div
                       className="w-10 h-8 border border-amber-900/60 flex-shrink-0"
                       style={{ backgroundColor: save.flagColor }}
                     />
@@ -137,7 +115,10 @@ export function LoadGameMenu({ onBack, onLoad, gameCoordinator }: LoadGameMenuPr
 
                     {/* Delete button */}
                     <button
-                      onClick={(e) => handleDelete(save.id, e)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Future: implement delete
+                      }}
                       className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-900/30 transition-opacity"
                     >
                       <Trash2 className="w-4 h-4 text-red-500/80" />
@@ -167,9 +148,9 @@ export function LoadGameMenu({ onBack, onLoad, gameCoordinator }: LoadGameMenuPr
             <MenuButton onClick={onBack}>Back</MenuButton>
           </div>
           <div className="flex-1">
-            <MenuButton 
-              onClick={() => selectedSave && onLoad(selectedSave)}
-              disabled={!selectedSave} // This now works
+            <MenuButton
+              onClick={onConfirmLoad}
+              disabled={!selectedSave}
             >
               Load
             </MenuButton>

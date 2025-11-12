@@ -1,4 +1,5 @@
 import React from 'react';
+import { MainMenu } from './menu-ui/components/MainMenu';
 import { SinglePlayerMenu } from './menu-ui/components/SinglePlayerMenu';
 import { LoadGameMenu } from './menu-ui/components/LoadGameMenu';
 import { CountrySelection } from './menu-ui/components/CountrySelection';
@@ -14,7 +15,11 @@ interface AppProps {
 
 // --- App component ---
 export default function App({ initializeGame, loadingScreen }: AppProps) {
-  const [currentView, setCurrentView] = React.useState('main');
+  const [currentView, setCurrentView] = React.useState('main-menu');
+
+  const onSinglePlayer = () => {
+    setCurrentView('single-player');
+  };
 
   const onNewGame = () => {
     setCurrentView('country-select');
@@ -24,8 +29,12 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
     setCurrentView('load');
   };
 
-  const onBack = () => {
-    setCurrentView('main');
+  const onBackToMain = () => {
+    setCurrentView('main-menu');
+  };
+
+  const onBackToSinglePlayer = () => {
+    setCurrentView('single-player');
   };
 
   // --- START GAME function ---
@@ -65,17 +74,36 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
   // --- Render the correct menu ---
   const renderView = () => {
     switch (currentView) {
-      case 'main':
-        return <SinglePlayerMenu onNewGame={onNewGame} onLoadGame={onLoadGame} onBack={() => {}} />;
+      case 'main-menu':
+        return (
+          <MainMenu
+            onSinglePlayer={onSinglePlayer}
+            onInstructions={() => alert('Instructions coming soon!')}
+            onOptions={() => alert('Options coming soon!')}
+            onCredits={() => alert('Credits coming soon!')}
+            onQuit={() => window.close()}
+          />
+        );
+
+      case 'single-player':
+        return <SinglePlayerMenu onNewGame={onNewGame} onLoadGame={onLoadGame} onBack={onBackToMain} />;
 
       case 'load':
-        return <LoadGameMenu onBack={onBack} onConfirmLoad={onConfirmLoad} />;
+        return <LoadGameMenu onBack={onBackToSinglePlayer} onConfirmLoad={onConfirmLoad} />;
 
       case 'country-select':
-        return <CountrySelection onBack={onBack} onSelectCountry={onStartGame} />;
+        return <CountrySelection onBack={onBackToSinglePlayer} onSelectCountry={onStartGame} />;
 
       default:
-        return <SinglePlayerMenu onNewGame={onNewGame} onLoadGame={onLoadGame} onBack={() => {}} />;
+        return (
+          <MainMenu
+            onSinglePlayer={onSinglePlayer}
+            onInstructions={() => alert('Instructions coming soon!')}
+            onOptions={() => alert('Options coming soon!')}
+            onCredits={() => alert('Credits coming soon!')}
+            onQuit={() => window.close()}
+          />
+        );
     }
   };
 
