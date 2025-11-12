@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MenuButton } from "./MenuButton";
 import { Trash2 } from "lucide-react";
+import { SaveLoadManager } from "../../game/SaveLoadManager";
 
 interface SaveGame {
   id: string;
@@ -12,21 +13,80 @@ interface SaveGame {
 
 interface LoadGameMenuProps {
   onBack: () => void;
-  onConfirmLoad: () => void;
+  onConfirmLoad: (slotNumber: number) => void;
 }
 
 export function LoadGameMenu({ onBack, onConfirmLoad }: LoadGameMenuProps) {
   const [activeTab, setActiveTab] = useState<"local" | "cloud">("local");
   const [selectedSave, setSelectedSave] = useState<SaveGame | null>(null);
+  const [saves, setSaves] = useState<SaveGame[]>([]);
 
-  // Mock saves for now - will be replaced with real data later
-  const mockSaves: SaveGame[] = [
-    { id: "1", name: "Germany - 1936", date: "Nov 12, 2025 9:30 PM", country: "Germany", flagColor: "#CC0000" },
-    { id: "2", name: "France - 1937", date: "Nov 11, 2025 8:15 PM", country: "France", flagColor: "#0055A4" },
-    { id: "3", name: "USA - 1938", date: "Nov 10, 2025 7:00 PM", country: "USA", flagColor: "#B22234" },
-  ];
+  // Load real saves from localStorage
+  useEffect(() => {
+    if (activeTab === "local") {
+      const loadedSaves: SaveGame[] = [];
 
-  const saves = activeTab === "local" ? mockSaves : [];
+      // Check save slots 1-10
+      for (let i = 1; i <= 10; i++) {
+        const saveData = SaveLoadManager.getSaveData(i);
+        if (saveData) {
+          const saveDate = new Date(saveData.saveTime);
+          const countryName = saveData.gameState.selectedCountryId || "Unknown";
+          const dateStr = saveData.gameState.currentDate;
+
+          loadedSaves.push({
+            id: i.toString(),
+            name: `${countryName} - ${dateStr.year}`,
+            date: saveDate.toLocaleString(),
+            country: countryName,
+            flagColor: getCountryColor(countryName)
+          });
+        }
+      }
+
+      setSaves(loadedSaves);
+      if (loadedSaves.length > 0 && !selectedSave) {
+        setSelectedSave(loadedSaves[0]);
+      }
+    } else {
+      setSaves([]);
+      setSelectedSave(null);
+    }
+  }, [activeTab]);
+
+  const getCountryColor = (countryName: string): string => {
+    const colors: Record<string, string> = {
+      'Germany': '#CC0000',
+      'France': '#0055A4',
+      'USA': '#B22234',
+      'UK': '#012169',
+      'Italy': '#008C45',
+      'Japan': '#BC002D',
+      'Soviet': '#DA291C',
+    };
+    return colors[countryName] || '#808080';
+  };
+
+  const handleDelete = (saveId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const slotNumber = parseInt(saveId);
+    SaveLoadManager.deleteSave(slotNumber);
+
+    const newSaves = saves.filter(save => save.id !== saveId);
+    setSaves(newSaves);
+
+    if (selectedSave?.id === saveId) {
+      setSelectedSave(newSaves.length > 0 ? newSaves[0] : null);
+    }
+  };
+
+  const handleLoad = () => {
+    if (selectedSave) {
+      const slotNumber = parseInt(selectedSave.id);
+      onConfirmLoad(slotNumber);
+    }
+  };
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-cover bg-center"
@@ -115,10 +175,7 @@ export function LoadGameMenu({ onBack, onConfirmLoad }: LoadGameMenuProps) {
 
                     {/* Delete button */}
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Future: implement delete
-                      }}
+                      onClick={(e) => handleDelete(save.id, e)}
                       className="p-2 opacity-0 group-hover:opacity-100 hover:bg-red-900/30 transition-opacity"
                     >
                       <Trash2 className="w-4 h-4 text-red-500/80" />
@@ -149,7 +206,7 @@ export function LoadGameMenu({ onBack, onConfirmLoad }: LoadGameMenuProps) {
           </div>
           <div className="flex-1">
             <MenuButton
-              onClick={onConfirmLoad}
+              onClick={handleLoad}
               disabled={!selectedSave}
             >
               Load

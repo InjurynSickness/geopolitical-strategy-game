@@ -3,6 +3,7 @@ import { MainMenu } from './menu-ui/components/MainMenu';
 import { SinglePlayerMenu } from './menu-ui/components/SinglePlayerMenu';
 import { LoadGameMenu } from './menu-ui/components/LoadGameMenu';
 import { CountrySelection } from './menu-ui/components/CountrySelection';
+import { MapSelection } from './menu-ui/components/MapSelection';
 // --- IMPORT GAME TYPES ---
 import { GameState } from './types.js';
 import { LoadingScreen } from './loadingScreen.js';
@@ -41,34 +42,64 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
   // This gets passed to CountrySelection
   const onStartGame = (country: any) => {
     console.log("Start Game clicked with country:", country);
+
+    // Check if "Other Countries" was selected - go to map view instead
+    if (country.id === 'other') {
+      setCurrentView('map-select');
+      return;
+    }
+
+    // Show loading screen with progress
     loadingScreen.show();
-    loadingScreen.updateProgress(10, "Loading Game...");
+    loadingScreen.updateProgress(0, "Initializing game...");
+
+    // Simulate loading steps
+    setTimeout(() => loadingScreen.updateProgress(20, "Loading map data..."), 100);
+    setTimeout(() => loadingScreen.updateProgress(40, "Initializing countries..."), 300);
+    setTimeout(() => loadingScreen.updateProgress(60, "Setting up economy..."), 600);
+    setTimeout(() => loadingScreen.updateProgress(80, "Preparing political systems..."), 900);
+    setTimeout(() => loadingScreen.updateProgress(95, "Almost ready..."), 1200);
 
     setTimeout(() => {
         initializeGame(); // Creates window.gameEngine
-        loadingScreen.updateProgress(100, "Done");
-        loadingScreen.hide();
-        // Hide React UI
-        const root = document.getElementById('root');
-        if (root) (root as HTMLElement).style.display = 'none';
-    }, 50);
+        loadingScreen.updateProgress(100, "Done!");
+
+        setTimeout(() => {
+          loadingScreen.hide();
+          // Hide React UI
+          const root = document.getElementById('root');
+          if (root) (root as HTMLElement).style.display = 'none';
+        }, 300);
+    }, 1500);
   };
 
   // --- LOAD GAME function ---
   // This gets passed to LoadGameMenu
-  const onConfirmLoad = () => {
-     console.log("Load Game confirmed");
+  const onConfirmLoad = (slotNumber: number) => {
+     console.log("Loading game from slot:", slotNumber);
+
      loadingScreen.show();
-     loadingScreen.updateProgress(10, "Initializing...");
+     loadingScreen.updateProgress(0, "Loading save data...");
+
+     setTimeout(() => loadingScreen.updateProgress(30, "Restoring game state..."), 100);
+     setTimeout(() => loadingScreen.updateProgress(60, "Initializing world..."), 300);
+     setTimeout(() => loadingScreen.updateProgress(90, "Almost done..."), 600);
 
      setTimeout(() => {
          initializeGame(); // Creates window.gameEngine
-         (window as any).gameEngine?.showLoadDialog();
-         loadingScreen.hide();
-         // Hide React UI
-         const root = document.getElementById('root');
-         if (root) (root as HTMLElement).style.display = 'none';
-     }, 50);
+
+         // Load the saved game state into the engine
+         (window as any).gameEngine?.loadGameFromSlot(slotNumber);
+
+         loadingScreen.updateProgress(100, "Loaded!");
+
+         setTimeout(() => {
+           loadingScreen.hide();
+           // Hide React UI
+           const root = document.getElementById('root');
+           if (root) (root as HTMLElement).style.display = 'none';
+         }, 300);
+     }, 900);
   };
 
   // --- Render the correct menu ---
@@ -93,6 +124,12 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
 
       case 'country-select':
         return <CountrySelection onBack={onBackToSinglePlayer} onSelectCountry={onStartGame} />;
+
+      case 'map-select':
+        return <MapSelection onBack={onBackToSinglePlayer} onSelectCountry={(countryId) => {
+          // When a country is selected from the map, start the game
+          onStartGame({ id: countryId, name: countryId });
+        }} />;
 
       default:
         return (
