@@ -179,15 +179,7 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry }: Interac
         </div>
       </div>
 
-      {/* Loading indicator */}
-      {!mapReady && (
-        <div className="absolute inset-0 bg-black flex items-center justify-center z-30">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-amber-900/30 border-t-amber-700 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-amber-100 tracking-widest text-[12px]">Loading Map...</p>
-          </div>
-        </div>
-      )}
+      {/* No separate loading indicator - we already showed one before this screen */}
     </div>
   );
 }

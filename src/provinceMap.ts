@@ -179,10 +179,14 @@ export class ProvinceMap {
     private handleClick(x: number, y: number): void {
         if (!this.mapReady) return;
         const province = this.getProvinceAt(x, y);
-        
+
         if (province && province.id !== 'OCEAN') {
-            if (this.selectedProvinceId !== province.id) {
-                this.onCountrySelect(province.id);
+            // Look up which country owns this province
+            const countryId = this.provinceOwnerMap.get(province.id);
+
+            if (countryId && this.selectedProvinceId !== province.id) {
+                // Pass the country ID (not province ID) to the callback
+                this.onCountrySelect(countryId);
                 this.selectedProvinceId = province.id;
                 this.startPulseAnimation();
                 this.drawOverlays();
