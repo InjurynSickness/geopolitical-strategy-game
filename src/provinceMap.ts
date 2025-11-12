@@ -111,9 +111,8 @@ export class ProvinceMap {
 
                 this.processTerrainImage();
                 this.buildPoliticalMap();
-                this.buildBorderMap();
 
-                // Render the map initially
+                // Render the map initially (without borders for now - they're too slow)
                 this.render();
                 console.log("Map rendered for the first time.");
 
@@ -121,6 +120,14 @@ export class ProvinceMap {
                 if (this.onMapReady) {
                     this.onMapReady();
                 }
+
+                // Build borders asynchronously in the background (non-blocking)
+                setTimeout(() => {
+                    console.log("Building borders in background...");
+                    this.buildBorderMap();
+                    this.render();
+                    console.log("Borders complete and rendered.");
+                }, 100);
             }
         };
 
