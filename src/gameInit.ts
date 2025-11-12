@@ -38,24 +38,29 @@ export function initializeFullGame(): void {
         gameContainer.style.display = 'block';
         console.log('Game container created');
 
-        // 4. Create the province map with full rendering
+        // 4. Create UI manager first (needed for province map callback)
+        let uiManager: UIManager;
+
+        // 5. Create the province map with full rendering
         const provinceMap = new ProvinceMap(
             gameContainer,
             (countryId: string) => {
                 const gameState = gameEngine.getGameState();
                 gameState.selectedCountryId = countryId;
-                uiManager.updateCountryInfo();
+                if (uiManager) {
+                    uiManager.updateCountryInfo();
+                }
             }
         );
         console.log('Province map created, loading assets...');
 
-        // 5. Set up the map with country data
+        // 6. Set up the map with country data
         provinceMap.updateCountries(gameState.countries, countryData);
         provinceMap.setProvinceOwnerMap(provinceToCountryMap);
         console.log('Map configured with countries and province assignments');
 
-        // 6. Create UI manager
-    const uiManager = new UIManager(
+        // 7. Initialize UI manager
+    uiManager = new UIManager(
         () => gameEngine.getGameState(),
         (slot: number) => {
             SaveLoadManager.saveGame(gameEngine.getGameState(), slot);
@@ -77,10 +82,10 @@ export function initializeFullGame(): void {
         () => { /* Test event handler */ }
     );
 
-        // 7. Setup UI elements (create them if they don't exist)
+        // 8. Setup UI elements (create them if they don't exist)
         createGameUI();
 
-        // 8. Setup UI callbacks
+        // 9. Setup UI callbacks
         uiManager.setupUI(
             () => {
                 gameEngine.togglePause();
@@ -120,7 +125,7 @@ export function initializeFullGame(): void {
         );
         console.log('UI manager setup complete');
 
-        // 9. Start game loop
+        // 10. Start game loop
         gameEngine.startGameLoop(() => {
             if (provinceMap.isMapReady()) {
                 provinceMap.forceRender();
@@ -129,12 +134,12 @@ export function initializeFullGame(): void {
         });
         console.log('Game loop started');
 
-        // 10. Initial UI update
+        // 11. Initial UI update
         uiManager.updateDisplay();
         uiManager.updatePauseButton(gameState.isPaused);
         uiManager.updateSpeedButtons(gameState.gameSpeed);
 
-        // 11. Expose game engine globally for debugging and save/load
+        // 12. Expose game engine globally for debugging and save/load
         (window as any).gameEngine = gameEngine;
         (window as any).provinceMap = provinceMap;
 
