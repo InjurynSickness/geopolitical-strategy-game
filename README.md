@@ -123,20 +123,41 @@ The UI uses a Figma-designed system with:
 
 ## 🐛 Troubleshooting
 
-### Build fails with "Cannot find module '@tailwindcss/postcss'"
-Run:
-```bash
-npm install -D @tailwindcss/postcss autoprefixer tailwindcss tailwindcss-animate typescript
-```
+### ❗ "Cannot find module 'tailwindcss'" or "Cannot find module '@tailwindcss/postcss'"
 
-### Dev server won't start
+**This is the most common issue!** It means dependencies aren't installed properly.
+
+**Solution:**
+1. Delete `node_modules` and `package-lock.json`:
+   ```bash
+   # Windows Command Prompt
+   rmdir /s /q node_modules
+   del package-lock.json
+
+   # Windows PowerShell / Git Bash / Mac / Linux
+   rm -rf node_modules package-lock.json
+   ```
+
+2. Reinstall everything:
+   ```bash
+   npm install
+   ```
+
+3. Run the dev server:
+   ```bash
+   npm run dev
+   ```
+
+### Blank white screen
+This happens when CSS fails to load. Follow the steps above to fix dependencies.
+
+### Dev server won't start (Permission errors on Linux/Mac)
 Try running Vite directly:
 ```bash
 node node_modules/vite/bin/vite.js
 ```
 
-### Permission denied errors
-On Linux/Mac, you may need to fix permissions:
+Or fix permissions:
 ```bash
 chmod +x node_modules/.bin/vite
 ```
