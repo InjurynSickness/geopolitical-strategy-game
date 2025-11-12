@@ -27,27 +27,48 @@ export class LoadingScreen {
     public show(): void {
         this.loadingElement = document.createElement('div');
         this.loadingElement.id = 'loadingScreen';
+        this.loadingElement.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d4af37;
+        `;
         this.loadingElement.innerHTML = `
-            <div class="loading-content">
-                <div class="loading-header">
-                    <h1 class="loading-title">Geopolitical Strategy</h1>
-                    <div class="loading-spinner"></div>
-                </div>
-                
-                <div class="loading-progress">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" id="progressBar"></div>
+            <div style="text-align: center; max-width: 600px; padding: 40px;">
+                <h1 style="font-size: 48px; margin-bottom: 20px; color: #d4af37; text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);">Geopolitical Strategy</h1>
+                <div style="width: 60px; height: 60px; border: 4px solid rgba(212, 175, 55, 0.3); border-top-color: #d4af37; border-radius: 50%; margin: 30px auto; animation: spin 1s linear infinite;"></div>
+
+                <div style="margin: 40px 0;">
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 15px;">
+                        <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #d4af37, #ffd700); transition: width 0.3s ease;"></div>
                     </div>
-                    <p class="loading-status" id="loadingStatus">Initializing...</p>
+                    <p id="loadingStatus" style="color: #d4af37; font-size: 16px; margin: 0;">Initializing...</p>
                 </div>
-                
-                <div class="loading-tip">
-                    <p class="tip-label">TIP:</p>
-                    <p class="tip-text" id="tipText">${this.getRandomTip()}</p>
+
+                <div style="margin-top: 60px; padding: 20px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.3);">
+                    <p style="color: #d4af37; font-size: 14px; font-weight: bold; margin: 0 0 10px 0;">TIP:</p>
+                    <p id="tipText" style="color: #fff; font-size: 14px; margin: 0; line-height: 1.6;">${this.getRandomTip()}</p>
                 </div>
             </div>
         `;
-        
+
+        // Add spinner animation
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
         this.container.appendChild(this.loadingElement);
         this.progressBar = document.getElementById('progressBar');
         this.statusText = document.getElementById('loadingStatus');
