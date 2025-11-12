@@ -79,8 +79,7 @@ export class ProvinceMap {
         this.politicalMapBuilder = new PoliticalMapBuilder(
             MAP_WIDTH,
             MAP_HEIGHT,
-            this.canvasManager.hiddenCtx,
-            this.allCountryData
+            this.canvasManager.hiddenCtx
         );
         this.borderMapBuilder = new BorderMapBuilder(MAP_WIDTH, MAP_HEIGHT);
         
@@ -290,7 +289,7 @@ export class ProvinceMap {
 
     private buildPoliticalMap(): void {
         if (!this.mapReady || !this.allCountryData) return;
-        this.politicalMapBuilder.buildPoliticalMap(this.canvasManager.politicalCtx, this.provinceOwnerMap);
+        this.politicalMapBuilder.buildPoliticalMap(this.canvasManager.politicalCtx, this.provinceOwnerMap, this.allCountryData);
         this.politicalMapReady = true;
     }
 

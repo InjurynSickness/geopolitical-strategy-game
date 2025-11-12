@@ -8,52 +8,55 @@ export class PoliticalMapBuilder {
     constructor(
         private mapWidth: number,
         private mapHeight: number,
-        private hiddenCtx: CanvasRenderingContext2D,
-        private allCountryData: Map<string, CountryData>
+        private hiddenCtx: CanvasRenderingContext2D
     ) {}
 
     public buildPoliticalMap(
         politicalCtx: CanvasRenderingContext2D,
-        provinceOwnerMap: Map<string, string>
+        provinceOwnerMap: Map<string, string>,
+        allCountryData: Map<string, CountryData>
     ): void {
         console.log("Building political map texture...");
+        console.log("Country data size:", allCountryData.size);
 
         politicalCtx.clearRect(0, 0, this.mapWidth, this.mapHeight);
-        
+
         const imageData = this.hiddenCtx.getImageData(0, 0, this.mapWidth, this.mapHeight);
         const data = imageData.data;
-        
+
         const politicalImageData = politicalCtx.createImageData(this.mapWidth, this.mapHeight);
         const polData = politicalImageData.data;
-        
+
+        let pixelsColored = 0;
         for (let i = 0; i < data.length; i += 4) {
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
-            
+
             if (data[i+3] === 0) continue;
 
             const colorKey = `${r},${g},${b}`;
             const province = provinceColorMap.get(colorKey);
-            
+
             if (province && province.id !== 'OCEAN') {
                 const ownerCountryId = provinceOwnerMap.get(province.id);
-                
+
                 if (ownerCountryId) {
-                    const country = this.allCountryData.get(ownerCountryId);
+                    const country = allCountryData.get(ownerCountryId);
                     if (country) {
                         const countryColor = this.hexToRgb(country.color);
                         polData[i] = countryColor[0];
                         polData[i + 1] = countryColor[1];
                         polData[i + 2] = countryColor[2];
                         polData[i + 3] = 255;
+                        pixelsColored++;
                     }
-                } 
+                }
             }
         }
-        
+
         politicalCtx.putImageData(politicalImageData, 0, 0);
-        console.log("Political map texture is built.");
+        console.log("Political map texture is built. Pixels colored:", pixelsColored);
     }
 
     private hexToRgb(hex: string): Color {
