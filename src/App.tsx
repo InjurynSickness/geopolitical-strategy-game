@@ -40,14 +40,14 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
       setLoadingMessage("LOADING SPRITES");
       setCurrentView('country-select');
 
-      // Smooth progress updates for nice visual experience
-      setTimeout(() => { setLoadingProgress(15); setLoadingMessage("INITIALIZING MAP"); }, 300);
-      setTimeout(() => { setLoadingProgress(30); setLoadingMessage("LOADING NATIONS"); }, 700);
-      setTimeout(() => { setLoadingProgress(45); setLoadingMessage("PREPARING RESOURCES"); }, 1200);
-      setTimeout(() => { setLoadingProgress(60); setLoadingMessage("LOADING DIVISIONS"); }, 1800);
-      setTimeout(() => { setLoadingProgress(75); setLoadingMessage("LOADING WORLD"); }, 2500);
-      setTimeout(() => { setLoadingProgress(85); setLoadingMessage("SETTING UP WORLD"); }, 3200);
-      setTimeout(() => { setLoadingProgress(92); setLoadingMessage("FINALIZING"); }, 4000);
+      // Faster progress updates so it doesn't get stuck at 0%
+      setTimeout(() => { setLoadingProgress(15); setLoadingMessage("INITIALIZING MAP"); }, 100);
+      setTimeout(() => { setLoadingProgress(30); setLoadingMessage("LOADING NATIONS"); }, 250);
+      setTimeout(() => { setLoadingProgress(45); setLoadingMessage("PREPARING RESOURCES"); }, 450);
+      setTimeout(() => { setLoadingProgress(60); setLoadingMessage("LOADING DIVISIONS"); }, 700);
+      setTimeout(() => { setLoadingProgress(75); setLoadingMessage("LOADING WORLD"); }, 1000);
+      setTimeout(() => { setLoadingProgress(85); setLoadingMessage("SETTING UP WORLD"); }, 1350);
+      setTimeout(() => { setLoadingProgress(92); setLoadingMessage("FINALIZING"); }, 1750);
     } else {
       // User selected a major nation - start game directly
       onStartGame(country.id);
@@ -91,16 +91,17 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
     // Store the selected country ID so we can set it after initialization
     const selectedCountryId = countryId;
 
-    // Show loading screen with progress
-    loadingScreen.show();
-    loadingScreen.updateProgress(0, "Initializing game...");
+    // Show Figma loading screen
+    setShowFigmaLoading(true);
+    setLoadingProgress(0);
+    setLoadingMessage("INITIALIZING GAME");
 
-    // Simulate loading steps
-    setTimeout(() => loadingScreen.updateProgress(20, "Loading map data..."), 100);
-    setTimeout(() => loadingScreen.updateProgress(40, "Initializing countries..."), 300);
-    setTimeout(() => loadingScreen.updateProgress(60, "Setting up economy..."), 600);
-    setTimeout(() => loadingScreen.updateProgress(80, "Preparing political systems..."), 900);
-    setTimeout(() => loadingScreen.updateProgress(95, "Almost ready..."), 1200);
+    // Smooth progress updates
+    setTimeout(() => { setLoadingProgress(20); setLoadingMessage("LOADING MAP DATA"); }, 100);
+    setTimeout(() => { setLoadingProgress(40); setLoadingMessage("INITIALIZING COUNTRIES"); }, 300);
+    setTimeout(() => { setLoadingProgress(60); setLoadingMessage("SETTING UP ECONOMY"); }, 600);
+    setTimeout(() => { setLoadingProgress(80); setLoadingMessage("PREPARING POLITICAL SYSTEMS"); }, 900);
+    setTimeout(() => { setLoadingProgress(95); setLoadingMessage("ALMOST READY"); }, 1200);
 
     setTimeout(() => {
         try {
@@ -122,10 +123,11 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
               }
             }
 
-            loadingScreen.updateProgress(100, "Done!");
+            setLoadingProgress(100);
+            setLoadingMessage("DONE!");
 
             setTimeout(() => {
-              loadingScreen.hide();
+              setShowFigmaLoading(false);
               // Hide React UI
               const root = document.getElementById('root');
               if (root) (root as HTMLElement).style.display = 'none';
@@ -138,7 +140,7 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
           console.log("initializeGame() completed successfully - waiting for map to load...");
         } catch (error) {
           console.error("Error initializing game:", error);
-          loadingScreen.hide();
+          setShowFigmaLoading(false);
           alert("Failed to initialize game. Check console for details.\n\n" + error);
           delete (window as any).onMapReady;
         }
