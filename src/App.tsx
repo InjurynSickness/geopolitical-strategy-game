@@ -30,8 +30,17 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
     // The map will notify us when it's ready via onCountrySelectionMapReady
     setShowFigmaLoading(true);
     setLoadingProgress(0);
-    setLoadingMessage("LOADING WORLD MAP");
+    setLoadingMessage("LOADING SPRITES");
     setCurrentView('country-select');
+
+    // Smooth progress updates for nice visual experience
+    setTimeout(() => { setLoadingProgress(15); setLoadingMessage("INITIALIZING MAP"); }, 300);
+    setTimeout(() => { setLoadingProgress(30); setLoadingMessage("LOADING NATIONS"); }, 700);
+    setTimeout(() => { setLoadingProgress(45); setLoadingMessage("PREPARING RESOURCES"); }, 1200);
+    setTimeout(() => { setLoadingProgress(60); setLoadingMessage("LOADING DIVISIONS"); }, 1800);
+    setTimeout(() => { setLoadingProgress(75); setLoadingMessage("LOADING WORLD"); }, 2500);
+    setTimeout(() => { setLoadingProgress(85); setLoadingMessage("SETTING UP WORLD"); }, 3200);
+    setTimeout(() => { setLoadingProgress(92); setLoadingMessage("FINALIZING"); }, 4000);
   };
 
   // Called by InteractiveCountrySelection to update loading progress
@@ -47,7 +56,7 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
     setLoadingMessage("READY!");
     setTimeout(() => {
       setShowFigmaLoading(false);
-    }, 300); // Reduced from 800ms to 300ms
+    }, 500); // Show "READY!" for half a second
   };
 
   const onLoadGame = () => {
