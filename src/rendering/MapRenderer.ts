@@ -12,13 +12,12 @@ export class MapRenderer {
     public render(): void {
         const ctx = this.canvasManager.visibleCtx;
         const camera = this.cameraController.camera;
-        
+
         ctx.save();
-        
-        // Ocean background
-        ctx.fillStyle = '#334a5e';
-        ctx.fillRect(0, 0, this.canvasManager.visibleCanvas.width, this.canvasManager.visibleCanvas.height);
-        
+
+        // Clear to transparent
+        ctx.clearRect(0, 0, this.canvasManager.visibleCanvas.width, this.canvasManager.visibleCanvas.height);
+
         // Apply camera transform
         ctx.translate(camera.x, camera.y);
         ctx.scale(camera.zoom, camera.zoom);

@@ -23,15 +23,11 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
 
     // Start loading
     if (onLoadingProgress) {
-      onLoadingProgress(10, "LOADING SPRITES");
+      onLoadingProgress(10, "SETTING UP WORLD");
     }
 
     // Import the map dynamically
     import('../../provinceMap.js').then(({ ProvinceMap }) => {
-      if (onLoadingProgress) {
-        onLoadingProgress(20, "INITIALIZING MAP");
-      }
-
       // When user clicks a province/country on the map
       const handleCountryClick = (countryId: string) => {
         console.log('Country clicked:', countryId);
@@ -52,23 +48,11 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
         handleMapReady
       );
 
-      if (onLoadingProgress) {
-        onLoadingProgress(40, "LOADING NATIONS");
-      }
-
       // Set up the map with country data
       import('../../game/GameStateInitializer.js').then(({ GameStateInitializer }) => {
-        if (onLoadingProgress) {
-          onLoadingProgress(60, "PREPARING RESOURCES");
-        }
-
         const tempGameState = GameStateInitializer.initializeGameState();
         provinceMapInstance.updateCountries(tempGameState.countries, countryData);
         provinceMapInstance.setProvinceOwnerMap(provinceToCountryMap);
-
-        if (onLoadingProgress) {
-          onLoadingProgress(75, "LOADING DIVISIONS");
-        }
       });
     });
 
