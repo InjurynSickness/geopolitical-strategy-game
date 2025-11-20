@@ -15,8 +15,8 @@ export class MapRenderer {
 
         ctx.save();
 
-        // HOI4-style ocean background - darker blue
-        ctx.fillStyle = '#2d4458';
+        // HOI4-style ocean background
+        ctx.fillStyle = '#4a6b7c';
         ctx.fillRect(0, 0, this.canvasManager.visibleCanvas.width, this.canvasManager.visibleCanvas.height);
 
         // Apply camera transform
@@ -25,14 +25,14 @@ export class MapRenderer {
 
         ctx.imageSmoothingEnabled = false;
 
-        // Add subtle terrain texture for depth (like HOI4)
+        // Very subtle terrain texture for slight depth
         ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 0.25;
+        ctx.globalAlpha = 0.1;
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
 
-        // Draw political colors at slightly reduced opacity for muted HOI4 look
+        // Draw political colors at FULL opacity for vibrant colors
         ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 0.75;
+        ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
 
         ctx.globalCompositeOperation = 'source-over';
