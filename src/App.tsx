@@ -4,6 +4,7 @@ import { SinglePlayerMenu } from './menu-ui/components/SinglePlayerMenu';
 import { LoadGameMenu } from './menu-ui/components/LoadGameMenu';
 import { InteractiveCountrySelection } from './menu-ui/components/InteractiveCountrySelection';
 import { ImageWithFallback } from './menu-ui/components/figma/ImageWithFallback';
+import { FigmaLoadingScreen } from './menu-ui/components/FigmaLoadingScreen';
 // --- IMPORT GAME TYPES ---
 import { LoadingScreen } from './loadingScreen.js';
 
@@ -16,24 +17,28 @@ interface AppProps {
 // --- App component ---
 export default function App({ initializeGame, loadingScreen }: AppProps) {
   const [currentView, setCurrentView] = React.useState('main-menu');
+  const [showFigmaLoading, setShowFigmaLoading] = React.useState(false);
+  const [loadingProgress, setLoadingProgress] = React.useState(0);
+  const [loadingMessage, setLoadingMessage] = React.useState('');
 
   const onSinglePlayer = () => {
     setCurrentView('single-player');
   };
 
   const onNewGame = () => {
-    // Show loading screen AND the interactive map immediately
+    // Show Figma loading screen AND the interactive map immediately
     // The map will notify us when it's ready via onCountrySelectionMapReady
-    loadingScreen.show();
-    loadingScreen.updateProgress(0, "Loading world map...");
+    setShowFigmaLoading(true);
+    setLoadingProgress(0);
+    setLoadingMessage("LOADING WORLD MAP");
 
     // Show realistic progress updates while assets load
-    setTimeout(() => loadingScreen.updateProgress(20, "Loading terrain..."), 200);
-    setTimeout(() => loadingScreen.updateProgress(40, "Loading provinces..."), 500);
-    setTimeout(() => loadingScreen.updateProgress(60, "Loading rivers..."), 800);
-    setTimeout(() => loadingScreen.updateProgress(75, "Building political map..."), 1200);
-    setTimeout(() => loadingScreen.updateProgress(85, "Drawing borders..."), 1800);
-    setTimeout(() => loadingScreen.updateProgress(95, "Finalizing..."), 2500);
+    setTimeout(() => { setLoadingProgress(20); setLoadingMessage("LOADING TERRAIN"); }, 200);
+    setTimeout(() => { setLoadingProgress(40); setLoadingMessage("LOADING PROVINCES"); }, 500);
+    setTimeout(() => { setLoadingProgress(60); setLoadingMessage("LOADING RIVERS"); }, 800);
+    setTimeout(() => { setLoadingProgress(75); setLoadingMessage("BUILDING POLITICAL MAP"); }, 1200);
+    setTimeout(() => { setLoadingProgress(85); setLoadingMessage("DRAWING BORDERS"); }, 1800);
+    setTimeout(() => { setLoadingProgress(95); setLoadingMessage("FINALIZING"); }, 2500);
 
     setCurrentView('country-select');
   };
@@ -41,10 +46,11 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
   // Called when the InteractiveCountrySelection map is fully loaded
   const onCountrySelectionMapReady = () => {
     console.log("Country selection map is fully ready");
-    loadingScreen.updateProgress(100, "Ready!");
+    setLoadingProgress(100);
+    setLoadingMessage("READY!");
     setTimeout(() => {
-      loadingScreen.hide();
-    }, 300);
+      setShowFigmaLoading(false);
+    }, 800);
   };
 
   const onLoadGame = () => {
@@ -176,7 +182,7 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
           <div className="relative w-full h-screen overflow-hidden bg-black">
             <div className="absolute inset-0">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1734547458574-62e9eb9d6e33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3JsZCUyMHdhciUyMG1pbGl0YXJ5JTIwdmludGFnZXxlbnwxfHx8fDE3NjI3OTM2NTF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/background.png"
                 alt="Background"
                 className="w-full h-full object-cover"
               />
@@ -193,7 +199,7 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
           <div className="relative w-full h-screen overflow-hidden bg-black">
             <div className="absolute inset-0">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1734547458574-62e9eb9d6e33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3JsZCUyMHdhciUyMG1pbGl0YXJ5JTIwdmludGFnZXxlbnwxfHx8fDE3NjI3OTM2NTF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/background.png"
                 alt="Background"
                 className="w-full h-full object-cover"
               />
@@ -221,5 +227,17 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
     }
   };
 
-  return renderView();
+  return (
+    <>
+      {renderView()}
+      {showFigmaLoading && (
+        <div className="fixed inset-0 z-50">
+          <FigmaLoadingScreen
+            progress={loadingProgress}
+            message={loadingMessage}
+          />
+        </div>
+      )}
+    </>
+  );
 }

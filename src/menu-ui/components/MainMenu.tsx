@@ -15,7 +15,7 @@ export function MainMenu({ onSinglePlayer, onInstructions, onOptions, onCredits,
       {/* Background Image */}
       <div className="absolute inset-0">
         <ImageWithFallback
-          src="https://images.unsplash.com/photo-1734547458574-62e9eb9d6e33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3JsZCUyMHdhciUyMG1pbGl0YXJ5JTIwdmludGFnZXxlbnwxfHx8fDE3NjI3OTM2NTF8MA&ixlib=rb-4.1.0&q=80&w=1080"
+          src="/background.png"
           alt="Background"
           className="w-full h-full object-cover"
         />
