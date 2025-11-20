@@ -21,11 +21,6 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
 
     let provinceMapInstance: any = null;
 
-    // Start loading
-    if (onLoadingProgress) {
-      onLoadingProgress(10, "SETTING UP WORLD");
-    }
-
     // Import the map dynamically
     import('../../provinceMap.js').then(({ ProvinceMap }) => {
       // When user clicks a province/country on the map
