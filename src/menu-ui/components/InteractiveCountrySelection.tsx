@@ -21,8 +21,17 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
 
     let provinceMapInstance: any = null;
 
+    // Report initial progress
+    if (onLoadingProgress) {
+      onLoadingProgress(0, "LOADING MAP");
+    }
+
     // Import the map dynamically
     import('../../provinceMap.js').then(({ ProvinceMap }) => {
+      if (onLoadingProgress) {
+        onLoadingProgress(20, "INITIALIZING MAP");
+      }
+
       // When user clicks a province/country on the map
       const handleCountryClick = (countryId: string) => {
         console.log('Country clicked:', countryId);
@@ -33,6 +42,12 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
       const handleMapReady = () => {
         console.log('Country selection map fully ready with borders');
         setMapReady(true);
+
+        // Report completion
+        if (onLoadingProgress) {
+          onLoadingProgress(100, "READY!");
+        }
+
         // Notify parent that map is ready (this will hide the loading screen)
         onMapReady();
       };
@@ -43,11 +58,23 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
         handleMapReady
       );
 
+      if (onLoadingProgress) {
+        onLoadingProgress(40, "LOADING COUNTRIES");
+      }
+
       // Set up the map with country data
       import('../../game/GameStateInitializer.js').then(({ GameStateInitializer }) => {
+        if (onLoadingProgress) {
+          onLoadingProgress(60, "SETTING UP NATIONS");
+        }
+
         const tempGameState = GameStateInitializer.initializeGameState();
         provinceMapInstance.updateCountries(tempGameState.countries, countryData);
         provinceMapInstance.setProvinceOwnerMap(provinceToCountryMap);
+
+        if (onLoadingProgress) {
+          onLoadingProgress(80, "FINALIZING");
+        }
       });
     });
 
@@ -57,7 +84,7 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
         provinceMapInstance.destroy();
       }
     };
-  }, []);
+  }, [onMapReady, onLoadingProgress]);
 
   const selectedCountryData = selectedCountryId ? countryData.get(selectedCountryId) : null;
 

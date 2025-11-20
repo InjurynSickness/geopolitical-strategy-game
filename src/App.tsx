@@ -37,17 +37,9 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
       // User wants to select from all 192 countries - show interactive map
       setShowFigmaLoading(true);
       setLoadingProgress(0);
-      setLoadingMessage("LOADING SPRITES");
+      setLoadingMessage("LOADING MAP");
       setCurrentView('country-select');
-
-      // Faster progress updates so it doesn't get stuck at 0%
-      setTimeout(() => { setLoadingProgress(15); setLoadingMessage("INITIALIZING MAP"); }, 100);
-      setTimeout(() => { setLoadingProgress(30); setLoadingMessage("LOADING NATIONS"); }, 250);
-      setTimeout(() => { setLoadingProgress(45); setLoadingMessage("PREPARING RESOURCES"); }, 450);
-      setTimeout(() => { setLoadingProgress(60); setLoadingMessage("LOADING DIVISIONS"); }, 700);
-      setTimeout(() => { setLoadingProgress(75); setLoadingMessage("LOADING WORLD"); }, 1000);
-      setTimeout(() => { setLoadingProgress(85); setLoadingMessage("SETTING UP WORLD"); }, 1350);
-      setTimeout(() => { setLoadingProgress(92); setLoadingMessage("FINALIZING"); }, 1750);
+      // InteractiveCountrySelection will handle progress updates via onMapLoadingProgress
     } else {
       // User selected a major nation - start game directly
       onStartGame(country.id);
@@ -63,9 +55,7 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
   // Called when the InteractiveCountrySelection map is fully loaded
   const onCountrySelectionMapReady = () => {
     console.log("Country selection map is fully ready");
-    // Jump to 100% immediately when map is ready
-    setLoadingProgress(100);
-    setLoadingMessage("READY!");
+    // InteractiveCountrySelection already set progress to 100%, just hide after brief delay
     setTimeout(() => {
       setShowFigmaLoading(false);
     }, 300);
