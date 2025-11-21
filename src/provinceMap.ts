@@ -131,22 +131,22 @@ export class ProvinceMap {
         };
 
         this.terrainImage.onload = onAssetLoad;
-        this.terrainImage.src = './terrain.png';
+        this.terrainImage.src = './terrain.bmp';
 
         this.provinceImage.onload = onAssetLoad;
-        this.provinceImage.src = './provinces.png';
-        
+        this.provinceImage.src = './provinces.bmp';
+
         this.riversImage.onload = () => {
             console.log("Recoloring rivers...");
             this.canvasManager.recoloredRiversCtx.drawImage(this.riversImage, 0, 0);
             this.canvasManager.recoloredRiversCtx.globalCompositeOperation = 'source-in';
-            this.canvasManager.recoloredRiversCtx.fillStyle = '#283a4a'; 
+            this.canvasManager.recoloredRiversCtx.fillStyle = '#283a4a';
             this.canvasManager.recoloredRiversCtx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
             this.canvasManager.recoloredRiversCtx.globalCompositeOperation = 'source-over';
             console.log("Rivers recolored.");
             onAssetLoad();
         };
-        this.riversImage.src = './rivers.png';
+        this.riversImage.src = './rivers.bmp';
     }
 
     private processTerrainImage(): void {
