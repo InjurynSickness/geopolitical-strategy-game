@@ -20,12 +20,50 @@ const YUG_CORE_PRIORITY = ['CRO', 'SRB', 'BOS', 'SLO', 'MAC', 'MON'];
 
 // Colonial territories to reassign for 2000s accuracy
 // These were transferred/returned between WW2 and 2000
+// Excludes territories still colonial in 2000 (French Guiana, Guadeloupe, Reunion, New Caledonia, etc.)
 const COLONIAL_REASSIGNMENTS = {
+    // Asia-Pacific
     '320': 'IND',  // French India (Pondicherry) → India (transferred 1954)
     '321': 'IND',  // Portuguese India (Goa) → India (annexed 1961)
+    '422': 'SRL',  // Ceylon → Sri Lanka (independent 1948)
     '721': 'INS',  // Portuguese Timor → Indonesia (annexed 1975, independent 2002)
     '326': 'CHI',  // Hong Kong → China (returned 1997)
     '728': 'CHI',  // Macau → China (returned 1999)
+    '636': 'FIJ',  // Fiji → Fiji (independent 1970)
+    '639': 'FIJ',  // Maiana (Kiribati area) → Fiji (independent 1970)
+    '643': 'FIJ',  // Fongafale (Tuvalu area) → Fiji (independent 1970)
+    '725': 'FIJ',  // Nauru → Fiji (independent 1970)
+    '281': 'MLD',  // Maldives → Maldives (independent 1965)
+
+    // Middle East
+    '1014': 'BHR', // Bahrain → Bahrain (independent 1971)
+    '765': 'QAT',  // Qatar → Qatar (independent 1971)
+    '659': 'YEM',  // South Yemen → Yemen (unified 1990)
+    '906': 'YEM',  // Socotra → Yemen (unified 1990)
+
+    // Africa
+    '268': 'DJI',  // French Somaliland → Djibouti (independent 1977)
+    '295': 'COG',  // Belgian Congo → Congo (independent 1960)
+    '538': 'COG',  // Cameroun (Belgian) → Congo (independent 1960)
+    '718': 'COG',  // Stanleyville → Congo (independent 1960)
+    '888': 'COG',  // Lusambo → Congo (independent 1960)
+    '889': 'COG',  // Elisabethville → Congo (independent 1960)
+    '890': 'COG',  // Costermansville → Congo (independent 1960)
+    '540': 'ANG',  // Angola → Angola (independent 1975)
+    '891': 'ANG',  // Zambesi → Angola (independent 1975)
+    '705': 'STP',  // São Tomé → São Tomé and Príncipe (independent 1975)
+    '116': 'MLT',  // Malta → Malta (independent 1964)
+    '708': 'COM',  // Comoro Islands → Comoros (independent 1975)
+
+    // Caribbean & Americas
+    '311': 'BLZ',  // British Honduras → Belize (independent 1981)
+    '687': 'GYA',  // British Guyana → Guyana (independent 1966)
+    '689': 'JAM',  // Jamaica → Jamaica (independent 1962)
+    '690': 'BAH',  // Bahama Islands → Bahamas (independent 1973)
+    '693': 'BAH',  // Southern Bahamas → Bahamas (independent 1973)
+    '691': 'TRI',  // Trinidad → Trinidad and Tobago (independent 1962)
+    '692': 'BAS',  // Windward Islands → Barbados area (independent 1966)
+    '308': 'BAS',  // Britain SA → Barbados area (independent 1966)
 };
 
 // Parse a single state file

@@ -277,7 +277,14 @@ function loadCountryColors() {
 
     for (const file of files) {
         const countryName = file.replace('.txt', '');
-        const tag = NAME_TO_TAG[countryName];
+
+        // Check if countryName is in NAME_TO_TAG mapping
+        let tag = NAME_TO_TAG[countryName];
+
+        // If not found, check if the filename itself is a 3-letter tag (e.g., "USA.txt")
+        if (!tag && /^[A-Z]{3}$/.test(countryName)) {
+            tag = countryName;
+        }
 
         if (tag) {
             const filePath = path.join(COLORS_DIR, file);

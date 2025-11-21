@@ -3,8 +3,12 @@
 import { provinceColorMap } from '../provinceData.js';
 import { CountryData } from '../countryData.js';
 import { Color } from '../types.js';
+import { waterProvinceIds } from '../waterProvinces.js';
 
 export class PoliticalMapBuilder {
+    // Ocean/sea color (standard blue)
+    private static readonly WATER_COLOR: Color = [30, 77, 139]; // #1e4d8b
+
     constructor(
         private mapWidth: number,
         private mapHeight: number,
@@ -49,16 +53,23 @@ export class PoliticalMapBuilder {
                 const province = provinceColorMap.get(colorKey);
 
                 if (province && province.id !== 'OCEAN') {
-                    const ownerCountryId = provinceOwnerMap.get(province.id);
-                    if (ownerCountryId) {
-                        const country = allCountryData.get(ownerCountryId);
-                        if (country) {
-                            countryRgb = this.hexToRgb(country.color);
+                    // Check if this is a water province first
+                    if (waterProvinceIds.has(province.id)) {
+                        // Water province - color it blue
+                        countryRgb = PoliticalMapBuilder.WATER_COLOR;
+                    } else {
+                        // Land province - get country color
+                        const ownerCountryId = provinceOwnerMap.get(province.id);
+                        if (ownerCountryId) {
+                            const country = allCountryData.get(ownerCountryId);
+                            if (country) {
+                                countryRgb = this.hexToRgb(country.color);
+                            } else {
+                                countryRgb = null;
+                            }
                         } else {
                             countryRgb = null;
                         }
-                    } else {
-                        countryRgb = null;
                     }
                 } else {
                     countryRgb = null;
