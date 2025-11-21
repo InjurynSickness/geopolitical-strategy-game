@@ -131,18 +131,12 @@ export class ProvinceMap {
                 this.render();
                 console.log('[ProvinceMap] ✓ Map rendered');
 
-                // Build borders asynchronously in the background (non-blocking)
-                setTimeout(() => {
-                    console.log('[ProvinceMap] Building borders in background...');
-                    try {
-                        this.buildBorderMap();
-                        this.render();
-                        console.log('[ProvinceMap] ✓ Borders complete and rendered');
-                    } catch (error) {
-                        console.error('[ProvinceMap] ERROR building borders:', error);
-                    }
+                // Skip border building - old border data doesn't match new HOI4 provinces
+                // TODO: Generate new border data or use a different border rendering approach
+                console.log('[ProvinceMap] Skipping border generation (incompatible with HOI4 province data)');
 
-                    // Notify that map is FULLY ready (including borders)
+                // Notify that map is ready immediately
+                setTimeout(() => {
                     console.log('[ProvinceMap] Calling onMapReady callback...');
                     if (this.onMapReady) {
                         this.onMapReady();
