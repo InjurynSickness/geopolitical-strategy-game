@@ -60,7 +60,7 @@ export class CanvasManager {
         const canvas = document.createElement('canvas');
         canvas.width = this.container.clientWidth;
         canvas.height = this.container.clientHeight;
-        canvas.style.backgroundColor = '#334a5e';
+        canvas.style.backgroundColor = '#000000';  // Pure black, no blue tint
         canvas.style.cursor = 'grab';
         this.container.appendChild(canvas);
         return canvas;

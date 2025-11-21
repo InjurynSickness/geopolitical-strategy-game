@@ -216,18 +216,35 @@ export class ProvinceMap {
         if (!this.mapReady) return;
         const province = this.getProvinceAt(x, y);
 
-        if (province && province.id !== 'OCEAN') {
-            // Look up which country owns this province
-            const countryId = this.provinceOwnerMap.get(province.id);
+        console.log('[ProvinceMap] Clicked province:', province);
 
-            if (countryId && this.selectedProvinceId !== province.id) {
-                // Pass the country ID (not province ID) to the callback
-                this.onCountrySelect(countryId);
-                this.selectedProvinceId = province.id;
-                this.startPulseAnimation();
-                this.drawOverlays();
-                this.render();
-            }
+        // Filter out invalid provinces
+        if (!province) {
+            console.log('[ProvinceMap] No province found at click location');
+            return;
+        }
+
+        // Filter out ocean, sea, lakes - only land provinces are clickable
+        if (province.id === 'OCEAN' || province.id === '0' ||
+            province.name === 'sea' || province.name === 'lake') {
+            console.log('[ProvinceMap] Clicked on water province, ignoring');
+            return;
+        }
+
+        // Look up which country owns this province
+        const countryId = this.provinceOwnerMap.get(province.id);
+        console.log('[ProvinceMap] Province owner:', countryId);
+
+        if (countryId && this.selectedProvinceId !== province.id) {
+            console.log('[ProvinceMap] Selecting country:', countryId);
+            // Pass the country ID (not province ID) to the callback
+            this.onCountrySelect(countryId);
+            this.selectedProvinceId = province.id;
+            this.startPulseAnimation();
+            this.drawOverlays();
+            this.render();
+        } else if (!countryId) {
+            console.log('[ProvinceMap] Province has no owner assigned');
         }
     }
     

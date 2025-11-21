@@ -15,8 +15,9 @@ export class MapRenderer {
 
         ctx.save();
 
-        // Clear canvas completely - no background
-        ctx.clearRect(0, 0, this.canvasManager.visibleCanvas.width, this.canvasManager.visibleCanvas.height);
+        // Clear to black
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, this.canvasManager.visibleCanvas.width, this.canvasManager.visibleCanvas.height);
 
         // Apply camera transform
         ctx.translate(camera.x, camera.y);
@@ -24,31 +25,28 @@ export class MapRenderer {
 
         ctx.imageSmoothingEnabled = false;
 
-        // TEMPORARY: Draw raw provinces.png to see full HOI4 map structure
-        // TODO: Generate proper province ownership data for all 13,382 provinces
+        // Draw the raw provinces map
+        // This shows all 13,382 HOI4 provinces with their original colors
         ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 0.3; // Dim so we can see it
+        ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.hiddenCanvas, 0, 0);
 
-        // Draw political colors on top (only 22% of map has colors currently)
-        ctx.globalAlpha = 0.8;
+        // Draw political colors on top (ONLY where we have ownership data)
+        // This will blend with the provinces underneath
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 0.7;  // Semi-transparent so provinces show through
         ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
         ctx.globalAlpha = 1.0;
 
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1.0;
-
         // Draw rivers
-        ctx.globalAlpha = 0.8; // Slightly increased from 0.7 to 0.8
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 0.6;
         ctx.drawImage(this.canvasManager.recoloredRiversCanvas, 0, 0);
         ctx.globalAlpha = 1.0;
 
-        // Draw borders
-        ctx.drawImage(this.canvasManager.borderCanvas, 0, 0);
-        
         // Draw overlays (selection, labels)
         ctx.drawImage(this.canvasManager.overlayCanvas, 0, 0);
-        
+
         ctx.restore();
     }
 }
