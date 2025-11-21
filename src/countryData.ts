@@ -1,223 +1,173 @@
-// /src/countryData.ts
+// Auto-generated country data from modern state files
+// Generated on: 2025-11-21T21:30:37.716Z
+// Source: modern states/
 //
-// This is the master list of ALL nations in the game.
-// The colors are inspired by the HOI4 file, with all
-// gaps filled in with unique, curated, and visually distinct colors.
+// Total countries: 152
 
 /**
- * Defines the basic data structure for a country,
- * primarily used for map rendering and identification.
+ * Defines the basic data structure for a country
  */
 export interface CountryData {
     name: string;
     color: string;
 }
 
-const DISPUTED_COLOR = '#fdfd96'; // Pale Yellow
-
 /**
- * Master map of all countries in the game.
- * The key is the 3-letter ISO code (e.g., "USA")
- * The value is the CountryData object.
+ * Master map of all countries in the game (HOI4 tags)
+ * Key: 3-letter HOI4 country tag (e.g., "USA", "PRC", "ENG")
+ * Value: CountryData with display name and map color
  */
 export const countryData = new Map<string, CountryData>([
-    // == 7 Major Playable Nations ==
-    // (Colors from your inspiration file)
-    ["USA", { name: "United States of America", color: "#1485ED" }], // USA
-    ["CHN", { name: "People's Republic of China", color: "#F50C37" }], // PRC
-    ["RUS", { name: "Russian Federation", color: "#7D0D18" }], // SOV
-    ["GBR", { name: "United Kingdom", color: "#C9385D" }], // ENG
-    ["FRA", { name: "France", color: "#3971E4" }], // FRA
-    ["DEU", { name: "Germany", color: "#665E57" }], // GER
-    ["JPN", { name: "Japan", color: "#FFD9B3" }], // JAP
-
-    // == Disputed Territories ==
-    ["PSE", { name: "Palestine", color: "#00732F" }], // PAL
-    ["XKX", { name: "Kosovo", color: "#00732F" }], // No HOI4 equivalent, using special
-
-    // == New Nations (Alphabetical) ==
-    // (Colors inspired by your file or hand-picked to match the style)
-    ["AFG", { name: "Afghanistan", color: "#40A0A7" }],
-    ["AGO", { name: "Angola", color: "#258C3D" }],
-    ["ALB", { name: "Albania", color: "#952D66" }],
-    ["ARE", { name: "United Arab Emirates", color: "#00732F" }], // Hand-picked
-    ["ARG", { name: "Argentina", color: "#919DEC" }],
-    ["ARM", { name: "Armenia", color: "#B066B4" }],
-    ["ATG", { name: "Antigua and Barbuda", color: "#CE1126" }], // Hand-picked
-    ["AUS", { name: "Australia", color: "#398F61" }], // AST
-    ["AUT", { name: "Austria", color: "#C2C6D7" }], // AUS
-    ["AZE", { name: "Azerbaijan", color: "#459731" }], // AZR
-    ["BDI", { name: "Burundi", color: "#1EB53A" }], // Hand-picked
-    ["BEL", { name: "Belgium", color: "#C1AB08" }],
-    ["BEN", { name: "Benin", color: "#FCD116" }], // Hand-picked
-    ["BFA", { name: "Burkina Faso", color: "#009E49" }], // Hand-picked
-    ["BGD", { name: "Bangladesh", color: "#006A4E" }], // Hand-picked
-    ["BGR", { name: "Bulgaria", color: "#339B00" }], // BUL
-    ["BHR", { name: "Bahrain", color: "#CE1126" }], // Hand-picked
-    ["BHS", { name: "Bahamas", color: "#00778B" }], // Hand-picked
-    ["BIH", { name: "Bosnia and Herzegovina", color: "#48497E" }], // YUG
-    ["BLR", { name: "Belarus", color: "#B4DCBE" }],
-    ["BLZ", { name: "Belize", color: "#003F87" }], // Hand-picked
-    ["BOL", { name: "Bolivia", color: "#CC8E6C" }],
-    ["BRA", { name: "Brazil", color: "#4C913F" }],
-    ["BRB", { name: "Barbados", color: "#00267F" }], // Hand-picked
-    ["BRN", { name: "Brunei", color: "#FCE300" }], // Hand-picked
-    ["BTN", { name: "Bhutan", color: "#AC7A58" }], // BHU
-    ["BWA", { name: "Botswana", color: "#0B8470" }], // BOT
-    ["CAF", { name: "Central African Republic", color: "#003893" }], // Hand-picked
-    ["CAN", { name: "Canada", color: "#773027" }],
-    ["CHE", { name: "Switzerland", color: "#E00505" }], // SWI
-    ["CHL", { name: "Chile", color: "#9B656B" }],
-    ["CIV", { name: "Côte d'Ivoire", color: "#FF8200" }], // Hand-picked
-    ["CMR", { name: "Cameroon", color: "#007A5E" }], // Hand-picked
-    ["COD", { name: "DR Congo", color: "#007FFF" }], // Hand-picked
-    ["COG", { name: "Republic of the Congo", color: "#989FD1" }],
-    ["COL", { name: "Colombia", color: "#DEBB5B" }],
-    ["COM", { name: "Comoros", color: "#3B822E" }], // Hand-picked
-    ["CPV", { name: "Cape Verde", color: "#003893" }], // Hand-picked
-    ["CRI", { name: "Costa Rica", color: "#98802B" }], // COS
-    ["CUB", { name: "Cuba", color: "#8C41A6" }],
-    ["CYP", { name: "Cyprus", color: "#D47600" }], // Hand-picked
-    ["CZE", { name: "Czech Republic", color: "#36A79C" }],
-    ["DJI", { name: "Djibouti", color: "#6AB2E7" }], // Hand-picked
-    ["DMA", { name: "Dominica", color: "#006325" }], // Hand-picked
-    ["DNK", { name: "Denmark", color: "#99745D" }], // DEN
-    ["DOM", { name: "Dominican Republic", color: "#002D62" }], // Hand-picked (Duplicate in source)
-    ["DZA", { name: "Algeria", color: "#006633" }], // Hand-picked
-    ["ECU", { name: "Ecuador", color: "#F99262" }],
-    ["EGY", { name: "Egypt", color: "#E6E646" }],
-    ["ERI", { name: "Eritrea", color: "#418FDE" }], // Hand-picked
-    ["ESP", { name: "Spain", color: "#F2CD5E" }], // SPR
-    ["EST", { name: "Estonia", color: "#3287AF" }],
-    ["ETH", { name: "Ethiopia", color: "#078930" }], // Hand-picked (Duplicate in source)
-    ["FIN", { name: "Finland", color: "#CDD4E4" }],
-    ["FJI", { name: "Fiji", color: "#62B5E5" }], // Hand-picked
-    ["FSM", { name: "Micronesia", color: "#75B2DD" }], // Hand-picked
-    ["GAB", { name: "Gabon", color: "#009E60" }], // Hand-picked
-    ["GEO", { name: "Georgia", color: "#FF9696" }],
-    ["GHA", { name: "Ghana", color: "#FCD116" }], // Hand-picked
-    ["GIN", { name: "Guinea", color: "#CE1126" }], // Hand-picked
-    ["GMB", { name: "Gambia", color: "#0C1C8C" }], // Hand-picked
-    ["GNB", { name: "Guinea-Bissau", color: "#FCD116" }], // Hand-picked
-    ["GNQ", { name: "Equatorial Guinea", color: "#3E9A00" }], // Hand-picked
-    ["GRC", { name: "Greece", color: "#5DB5E3" }], // GRE
-    ["GRD", { name: "Grenada", color: "#007A5E" }], // Hand-picked
-    ["GTM", { name: "Guatemala", color: "#483170" }], // GUA
-    ["GUY", { name: "Guyana", color: "#009E49" }], // Hand-picked
-    ["HND", { name: "Honduras", color: "#809141" }],
-    ["HRV", { name: "Croatia", color: "#E646B4" }], // CRO
-    ["HTI", { name: "Haiti", color: "#AE7171" }], // HAI
-    ["HUN", { name: "Hungary", color: "#F97E62" }],
-    ["IDN", { name: "Indonesia", color: "#809E76" }], // INS
-    ["IND", { name: "India", color: "#AA0A0A" }], // RAJ
-    ["IRL", { name: "Ireland", color: "#509F5A" }], // IRE
-    ["IRN", { name: "Iran", color: "#239F40" }], // Hand-picked
-    ["IRQ", { name: "Iraq", color: "#B27263" }],
-    ["ISL", { name: "Iceland", color: "#647DAF" }], // ICE
-    ["ISR", { name: "Israel", color: "#0038B8" }], // Hand-picked
-    ["ITA", { name: "Italy", color: "#437F3F" }],
-    ["JAM", { name: "Jamaica", color: "#009B3A" }], // Hand-picked
-    ["JOR", { name: "Jordan", color: "#6F374E" }],
-    ["KAZ", { name: "Kazakhstan", color: "#00B0CA" }], // Hand-picked
-    ["KEN", { name: "Kenya", color: "#91670E" }],
-    ["KGZ", { name: "Kyrgyzstan", color: "#F00000" }], // Hand-picked
-    ["KHM", { name: "Cambodia", color: "#644796" }], // CAM
-    ["KIR", { name: "Kiribati", color: "#D21034" }], // Hand-picked
-    ["KNA", { name: "Saint Kitts and Nevis", color: "#009E49" }], // Hand-picked
-    ["KOR", { name: "South Korea", color: "#C60C30" }], // Hand-picked
-    ["KWT", { name: "Kuwait", color: "#007A3D" }], // Hand-picked
-    ["LAO", { name: "Laos", color: "#B06688" }],
-    ["LBN", { name: "Lebanon", color: "#82963C" }], // LEB
-    ["LBR", { name: "Liberia", color: "#002868" }], // Hand-picked (Duplicate in source)
-    ["LBY", { name: "Libya", color: "#C8B45A" }], // LBA
-    ["LCA", { name: "Saint Lucia", color: "#66CCFF" }], // Hand-picked
-    ["LKA", { name: "Sri Lanka", color: "#FFC400" }], // Hand-picked
-    ["LSO", { name: "Lesotho", color: "#00209F" }], // Hand-picked
-    ["LTU", { name: "Lithuania", color: "#DBDB77" }], // LIT
-    ["LUX", { name: "Luxembourg", color: "#41AFB3" }],
-    ["LVA", { name: "Latvia", color: "#4B4DBA" }], // LAT
-    ["MAC", { name: "Macao", color: "#00B2A9" }], // Hand-picked
-    ["MAR", { name: "Morocco", color: "#C1272D" }], // Hand-picked
-    ["MDA", { name: "Moldova", color: "#004B87" }], // Hand-picked
-    ["MDG", { name: "Madagascar", color: "#007E3A" }], // Hand-picked
-    ["MDV", { name: "Maldives", color: "#007E3A" }], // Hand-picked
-    ["MEX", { name: "Mexico", color: "#689853" }],
-    ["MHL", { name: "Marshall Islands", color: "#003063" }], // Hand-picked
-    ["MKD", { name: "Macedonia", color: "#D20000" }], // Hand-picked
-    ["MLI", { name: "Mali", color: "#14B53A" }], // Hand-picked
-    ["MLT", { name: "Malta", color: "#CF142B" }], // Hand-picked
-    ["MMR", { name: "Myanmar", color: "#FECB00" }], // Hand-picked
-    ["MNE", { name: "Montenegro", color: "#4D5A6B" }], // MNT
-    ["MNG", { name: "Mongolia", color: "#6C8C2A" }], // MON
-    ["MOZ", { name: "Mozambique", color: "#703E5A" }], // MZB
-    ["MRT", { name: "Mauritania", color: "#00A95C" }], // Hand-picked
-    ["MUS", { name: "Mauritius", color: "#EA2839" }], // Hand-picked
-    ["MWI", { name: "Malawi", color: "#000000" }], // Hand-picked
-    ["MYS", { name: "Malaysia", color: "#D5A979" }], // MAL
-    ["NAM", { name: "Namibia", color: "#003580" }], // Hand-picked
-    ["NER", { name: "Niger", color: "#E05206" }], // Hand-picked
-    ["NGA", { name: "Nigeria", color: "#008751" }], // Hand-picked
-    ["NIC", { name: "Nicaragua", color: "#92B3BF" }],
-    ["NLD", { name: "Netherlands", color: "#CB8A4A" }], // HOL
-    ["NOR", { name: "Norway", color: "#6F4747" }],
-    ["NPL", { name: "Nepal", color: "#9B8F6B" }], // Hand-picked (Duplicate in source)
-    ["NRU", { name: "Nauru", color: "#002B7F" }], // Hand-picked
-    ["NZL", { name: "New Zealand", color: "#34344C" }], // Hand-picked (Duplicate in source)
-    ["OMN", { name: "Oman", color: "#9B656B" }], // OMA
-    ["PAK", { name: "Pakistan", color: "#152642" }],
-    ["PAN", { name: "Panama", color: "#07235B" }], // Hand-picked (Duplicate in source)
-    ["PER", { name: "Peru", color: "#477161" }],
-    ["PHL", { name: "Philippines", color: "#0038A8" }], // Hand-picked (Duplicate in source)
-    ["PLW", { name: "Palau", color: "#4AADD6" }], // Hand-picked
-    ["PNG", { name: "Papua New Guinea", color: "#D21034" }], // Hand-picked
-    ["POL", { name: "Poland", color: "#C55C6A" }],
-    ["PRK", { name: "North Korea", color: "#024FA2" }], // Hand-picked
-    ["PRT", { name: "Portugal", color: "#277446" }], // POR
-    ["PRY", { name: "Paraguay", color: "#3971E4" }], // PAR (Same as FRA)
-    ["QAT", { name: "Qatar", color: "#8D1B3D" }], // Hand-picked
-    ["ROU", { name: "Romania", color: "#D7C448" }], // ROM
-    ["RWA", { name: "Rwanda", color: "#20603D" }], // Hand-picked
-    ["SAU", { name: "Saudi Arabia", color: "#ABBE98" }], // SAU
-    ["SDN", { name: "Sudan", color: "#007229" }], // Hand-picked
-    ["SEN", { name: "Senegal", color: "#00853F" }], // Hand-picked
-    ["SGP", { name: "Singapore", color: "#ED2939" }], // Hand-picked
-    ["SLB", { name: "Solomon Islands", color: "#215B33" }], // Hand-picked
-    ["SLE", { name: "Sierra Leone", color: "#0072C6" }], // Hand-picked
-    ["SLV", { name: "El Salvador", color: "#9882BF" }], // ELS
-    ["SOM", { name: "Somalia", color: "#4189DD" }], // Hand-picked
-    ["SRB", { name: "Serbia", color: "#A06E6E" }], // SER
-    ["SSD", { name: "South Sudan", color: "#078930" }], // Hand-picked
-    ["STP", { name: "Sao Tome and Principe", color: "#12AD2B" }], // Hand-picked
-    ["SUR", { name: "Suriname", color: "#B40A2D" }], // Hand-picked
-    ["SVK", { name: "Slovakia", color: "#0B4EA2" }], // Hand-picked
-    ["SVN", { name: "Slovenia", color: "#9EA1BC" }], // SLO
-    ["SWE", { name: "Sweden", color: "#2484F7" }],
-    ["SWZ", { name: "Eswatini (Swaziland)", color: "#3E51B5" }], // Hand-picked
-    ["SYC", { name: "Seychelles", color: "#003F87" }], // Hand-picked
-    ["SYR", { name: "Syria", color: "#646496" }],
-    ["TCD", { name: "Chad", color: "#002664" }], // Hand-picked
-    ["TGO", { name: "Togo", color: "#006A4E" }], // Hand-picked
-    ["THA", { name: "Thailand", color: "#ABBE98" }], // SIA
-    ["TJK", { name: "Tajikistan", color: "#006600" }], // Hand-picked
-    ["TKM", { name: "Turkmenistan", color: "#009739" }], // Hand-picked
-    ["TLS", { name: "Timor-Leste", color: "#DA291C" }], // Hand-picked
-    ["TON", { name: "Tonga", color: "#C10000" }], // Hand-picked
-    ["TTO", { name: "Trinidad and Tobago", color: "#CE1126" }], // Hand-picked
-    ["TUN", { name: "Tunisia", color: "#E70013" }], // Hand-picked
-    ["TUR", { name: "Turkey", color: "#ABBE98" }], // (Duplicate of SAU/THA)
-    ["TUV", { name: "Tuvalu", color: "#4AADD6" }], // Hand-picked
-    ["TZA", { name: "Tanzania", color: "#1EB53A" }], // Hand-picked
-    ["UGA", { name: "Uganda", color: "#000000" }], // Hand-picked
-    ["UKR", { name: "Ukraine", color: "#0050E6" }],
-    ["URY", { name: "Uruguay", color: "#ABBE98" }], // URG (Duplicate)
-    ["UZB", { name: "Uzbekistan", color: "#0072CE" }], // Hand-picked
-    ["VCT", { name: "Saint Vincent", color: "#0072C6" }], // Hand-picked
-    ["VEN", { name: "Venezuela", color: "#ABBE98" }], // VEN (Duplicate)
-    ["VNM", { name: "Vietnam", color: "#E6DF32" }], // VIN
-    ["VUT", { name: "Vanuatu", color: "#D21034" }], // Hand-picked
-    ["WSM", { name: "Samoa", color: "#003B79" }], // Hand-picked
-    ["YEM", { name: "Yemen", color: "#9B656B" }], // (Duplicate of CHL)
-    ["ZAF", { name: "South Africa", color: "#B3A576" }], // Hand-picked (Duplicate in source)
-    ["ZMB", { name: "Zambia", color: "#1EB53A" }], // Hand-picked
-    ["ZWE", { name: "Zimbabwe", color: "#0707EF" }] // ZIM
+    ["AFG", { name: "Afghanistan", color: "#a32929" }],
+    ["ALB", { name: "Albania", color: "#2557d0" }],
+    ["ALG", { name: "Algeria", color: "#9ee935" }],
+    ["ANG", { name: "Angola", color: "#da6ccd" }],
+    ["ARG", { name: "Argentina", color: "#86ead9" }],
+    ["ARM", { name: "Armenia", color: "#b86d14" }],
+    ["AST", { name: "Australia", color: "#5631c4" }],
+    ["AUS", { name: "Austria", color: "#47dd40" }],
+    ["AZR", { name: "Azerbaijan", color: "#ed5a8b" }],
+    ["BAN", { name: "Bangladesh", color: "#8dc2e2" }],
+    ["BEL", { name: "Belgium", color: "#a2ad1f" }],
+    ["BHU", { name: "Bhutan", color: "#b318dc" }],
+    ["BLR", { name: "Belarus", color: "#4bd28f" }],
+    ["BOL", { name: "Bolivia", color: "#e37d63" }],
+    ["BOS", { name: "Bosnia and Herzegovina", color: "#7e88f1" }],
+    ["BOT", { name: "BOT", color: "#57a329" }],
+    ["BRA", { name: "Brazil", color: "#d02597" }],
+    ["BRD", { name: "BRD", color: "#35e1e9" }],
+    ["BRM", { name: "Myanmar", color: "#dabe6c" }],
+    ["BUL", { name: "Bulgaria", color: "#b386ea" }],
+    ["CAM", { name: "Cambodia", color: "#14b82f" }],
+    ["CAN", { name: "Canada", color: "#c43144" }],
+    ["CAR", { name: "CAR", color: "#4082dd" }],
+    ["CBV", { name: "CBV", color: "#c2ed5a" }],
+    ["CHA", { name: "Chad", color: "#e28de2" }],
+    ["CHI", { name: "China", color: "#1fad83" }],
+    ["CHL", { name: "Chile", color: "#dc6918" }],
+    ["CMR", { name: "Cameroon", color: "#5c4bd2" }],
+    ["COL", { name: "Colombia", color: "#79e363" }],
+    ["COS", { name: "Costa Rica", color: "#f17eb3" }],
+    ["CRO", { name: "Croatia", color: "#2985a3" }],
+    ["CUB", { name: "Cuba", color: "#d0c825" }],
+    ["CYP", { name: "CYP", color: "#ac35e9" }],
+    ["CZE", { name: "Czech Republic", color: "#6cda95" }],
+    ["DAH", { name: "DAH", color: "#ea8e86" }],
+    ["DEN", { name: "Denmark", color: "#1437b8" }],
+    ["DOM", { name: "Dominican Republic", color: "#7bc431" }],
+    ["ECU", { name: "Ecuador", color: "#dd40bd" }],
+    ["EGY", { name: "Egypt", color: "#5aede0" }],
+    ["ELS", { name: "El Salvador", color: "#e2c28d" }],
+    ["ENG", { name: "United Kingdom", color: "#4d1fad" }],
+    ["EQG", { name: "EQG", color: "#18dc20" }],
+    ["ERI", { name: "ERI", color: "#d24b6e" }],
+    ["EST", { name: "Estonia", color: "#63a9e3" }],
+    ["ETH", { name: "Ethiopia", color: "#def17e" }],
+    ["FIN", { name: "Finland", color: "#9329a3" }],
+    ["FRA", { name: "France", color: "#25d088" }],
+    ["GAB", { name: "Gabon", color: "#e96835" }],
+    ["GAM", { name: "GAM", color: "#6c6dda" }],
+    ["GEO", { name: "Georgia", color: "#a3ea86" }],
+    ["GER", { name: "Germany", color: "#b81475" }],
+    ["GHA", { name: "Ghana", color: "#31b2c4" }],
+    ["GNA", { name: "GNA", color: "#ddc240" }],
+    ["GNB", { name: "GNB", color: "#a85aed" }],
+    ["GRE", { name: "Greece", color: "#8de2a2" }],
+    ["GUA", { name: "Guatemala", color: "#ad1f26" }],
+    ["HAI", { name: "Haiti", color: "#185bdc" }],
+    ["HOL", { name: "HOL", color: "#a1d24b" }],
+    ["HON", { name: "Honduras", color: "#e363da" }],
+    ["HUN", { name: "Hungary", color: "#7ef1d8" }],
+    ["ICE", { name: "Iceland", color: "#a36529" }],
+    ["INS", { name: "Indonesia", color: "#4725d0" }],
+    ["IRE", { name: "Ireland", color: "#45e935" }],
+    ["IRQ", { name: "Iraq", color: "#da6c96" }],
+    ["ISR", { name: "Israel", color: "#86c9ea" }],
+    ["ITA", { name: "Italy", color: "#b2b814" }],
+    ["IVO", { name: "IVO", color: "#9e31c4" }],
+    ["JAP", { name: "Japan", color: "#40dd87" }],
+    ["JOR", { name: "Jordan", color: "#ed715a" }],
+    ["KAZ", { name: "Kazakhstan", color: "#8d98e2" }],
+    ["KEN", { name: "Kenya", color: "#5bad1f" }],
+    ["KOR", { name: "KOR", color: "#dc18a5" }],
+    ["KOS", { name: "Kosovo", color: "#4bd2d1" }],
+    ["KUW", { name: "Kuwait", color: "#e3bd63" }],
+    ["KYR", { name: "KYR", color: "#ad7ef1" }],
+    ["LAO", { name: "Laos", color: "#29a337" }],
+    ["LAT", { name: "Latvia", color: "#d02543" }],
+    ["LBA", { name: "LBA", color: "#3589e9" }],
+    ["LEB", { name: "Lebanon", color: "#c0da6c" }],
+    ["LIB", { name: "Libya", color: "#e486ea" }],
+    ["LIT", { name: "Lithuania", color: "#14b880" }],
+    ["LUX", { name: "Luxembourg", color: "#c46731" }],
+    ["MAC", { name: "Macedonia", color: "#4c40dd" }],
+    ["MAD", { name: "Madagascar", color: "#7aed5a" }],
+    ["MAL", { name: "Malaysia", color: "#e28db9" }],
+    ["MEX", { name: "Mexico", color: "#1f91ad" }],
+    ["MLI", { name: "Mali", color: "#dcca18" }],
+    ["MLW", { name: "MLW", color: "#9e4bd2" }],
+    ["MNT", { name: "Montenegro", color: "#63e38c" }],
+    ["MOL", { name: "Moldova", color: "#f1827e" }],
+    ["MON", { name: "Mongolia", color: "#2949a3" }],
+    ["MOR", { name: "Morocco", color: "#84d025" }],
+    ["MRT", { name: "MRT", color: "#e935cd" }],
+    ["MZB", { name: "MZB", color: "#6cdacb" }],
+    ["NEP", { name: "Nepal", color: "#eabf86" }],
+    ["NGA", { name: "NGA", color: "#4214b8" }],
+    ["NGR", { name: "NGR", color: "#33c431" }],
+    ["NIC", { name: "Nicaragua", color: "#dd4070" }],
+    ["NKR", { name: "North Korea", color: "#5ab1ed" }],
+    ["NMB", { name: "NMB", color: "#d9e28d" }],
+    ["NOR", { name: "Norway", color: "#941fad" }],
+    ["NZL", { name: "New Zealand", color: "#18dc80" }],
+    ["OMA", { name: "Oman", color: "#d26b4b" }],
+    ["PAK", { name: "Pakistan", color: "#636ae3" }],
+    ["PAN", { name: "Panama", color: "#a6f17e" }],
+    ["PAR", { name: "Paraguay", color: "#a32977" }],
+    ["PER", { name: "Peru", color: "#25c4d0" }],
+    ["PHI", { name: "Philippines", color: "#e9c135" }],
+    ["PNG", { name: "PNG", color: "#a26cda" }],
+    ["POL", { name: "Poland", color: "#86ea99" }],
+    ["POR", { name: "Portugal", color: "#b81424" }],
+    ["PRC", { name: "People's Republic of China", color: "#316ac4" }],
+    ["PRU", { name: "PRU", color: "#abdd40" }],
+    ["RAJ", { name: "British India", color: "#ed5ae9" }],
+    ["RCG", { name: "RCG", color: "#8de2cc" }],
+    ["ROM", { name: "Romania", color: "#ad5e1f" }],
+    ["RWA", { name: "RWA", color: "#3618dc" }],
+    ["SAF", { name: "South Africa", color: "#5ed24b" }],
+    ["SAU", { name: "Saudi Arabia", color: "#e3639a" }],
+    ["SEN", { name: "Senegal", color: "#7ed1f1" }],
+    ["SIA", { name: "SIA", color: "#a3a129" }],
+    ["SIE", { name: "SIE", color: "#9b25d0" }],
+    ["SLO", { name: "Slovakia", color: "#35e97d" }],
+    ["SLV", { name: "Slovenia", color: "#da786c" }],
+    ["SOL", { name: "SOL", color: "#8698ea" }],
+    ["SOM", { name: "Somalia", color: "#62b814" }],
+    ["SOV", { name: "Soviet Union", color: "#c431a2" }],
+    ["SPR", { name: "Spain", color: "#40ddd4" }],
+    ["SUD", { name: "Sudan", color: "#edb95a" }],
+    ["SWE", { name: "Sweden", color: "#ab8de2" }],
+    ["SWI", { name: "Switzerland", color: "#1fad28" }],
+    ["SYR", { name: "Syria", color: "#dc1845" }],
+    ["TAJ", { name: "TAJ", color: "#4b91d2" }],
+    ["TMS", { name: "TMS", color: "#cbe363" }],
+    ["TOG", { name: "TOG", color: "#e57ef1" }],
+    ["TUN", { name: "Tunisia", color: "#29a373" }],
+    ["TUR", { name: "Turkey", color: "#d05b25" }],
+    ["TZN", { name: "TZN", color: "#3935e9" }],
+    ["UAE", { name: "United Arab Emirates", color: "#8ada6c" }],
+    ["UGA", { name: "Uganda", color: "#ea86be" }],
+    ["UKR", { name: "Ukraine", color: "#149fb8" }],
+    ["URG", { name: "URG", color: "#c4af31" }],
+    ["USA", { name: "United States", color: "#9940dd" }],
+    ["UZB", { name: "Uzbekistan", color: "#5aed82" }],
+    ["VEN", { name: "Venezuela", color: "#e28d8e" }],
+    ["VIN", { name: "VIN", color: "#1f4bad" }],
+    ["VOL", { name: "VOL", color: "#8edc18" }],
+    ["WES", { name: "WES", color: "#d24bc4" }],
+    ["YEM", { name: "Yemen", color: "#63e3cc" }],
+    ["YUG", { name: "Yugoslavia", color: "#f1ba7e" }],
+    ["ZAM", { name: "Zambia", color: "#4529a3" }],
+    ["ZIM", { name: "Zimbabwe", color: "#2fd025" }]
 ]);
