@@ -135,15 +135,21 @@ export class ProvinceMap {
                 // TODO: Generate new border data or use a different border rendering approach
                 console.log('[ProvinceMap] Skipping border generation (incompatible with HOI4 province data)');
 
-                // Notify that map is ready immediately
-                setTimeout(() => {
-                    console.log('[ProvinceMap] Calling onMapReady callback...');
-                    if (this.onMapReady) {
-                        this.onMapReady();
-                    } else {
-                        console.warn('[ProvinceMap] WARNING: No onMapReady callback provided');
-                    }
-                }, 100);
+                // Wait for browser to paint the frame before notifying map is ready
+                // This ensures smooth loading screen transition and reduces perceived lag
+                console.log('[ProvinceMap] Waiting for browser repaint...');
+                requestAnimationFrame(() => {
+                    // Wait one more frame to ensure everything is painted and interactive
+                    requestAnimationFrame(() => {
+                        console.log('[ProvinceMap] ✓✓✓ Browser repainted, map fully ready');
+                        console.log('[ProvinceMap] Calling onMapReady callback...');
+                        if (this.onMapReady) {
+                            this.onMapReady();
+                        } else {
+                            console.warn('[ProvinceMap] WARNING: No onMapReady callback provided');
+                        }
+                    });
+                });
             }
         };
 
@@ -190,24 +196,27 @@ export class ProvinceMap {
         const ctx = this.canvasManager.processedTerrainCtx;
 
         ctx.drawImage(this.terrainImage, 0, 0);
-        
+
         const terrainImageData = ctx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
         const terrainData = terrainImageData.data;
-        
+
         const maskImageData = this.canvasManager.hiddenCtx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
         const maskData = maskImageData.data;
 
+        // Optimized: Process all pixels at once but with simpler check
+        // This is faster than chunking for this use case
         for (let i = 0; i < terrainData.length; i += 4) {
             const r = maskData[i];
             const g = maskData[i + 1];
             const b = maskData[i + 2];
-            const colorKey = `${r},${g},${b}`;
 
-            if (!provinceColorMap.has(colorKey) || (r < 10 && g < 10 && b < 10)) {
+            // Simple black check is faster than Map lookup
+            // Ocean/water in provinces.png is mostly black (0,0,0) or very dark
+            if (r < 10 && g < 10 && b < 10) {
                 terrainData[i + 3] = 0;
             }
         }
-        
+
         ctx.putImageData(terrainImageData, 0, 0);
         console.log("DEBUG: terrain.png processing complete. Ocean is now transparent.");
     }

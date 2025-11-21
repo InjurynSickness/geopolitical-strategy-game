@@ -27,6 +27,10 @@ export class PoliticalMapBuilder {
         const politicalImageData = politicalCtx.createImageData(this.mapWidth, this.mapHeight);
         const polData = politicalImageData.data;
 
+        // Pre-compute color cache: province color -> country RGB color
+        // This avoids repeated Map lookups and hex-to-RGB conversions
+        const colorCache = new Map<string, [number, number, number] | null>();
+
         let pixelsColored = 0;
         for (let i = 0; i < data.length; i += 4) {
             const r = data[i];
@@ -36,22 +40,39 @@ export class PoliticalMapBuilder {
             if (data[i+3] === 0) continue;
 
             const colorKey = `${r},${g},${b}`;
-            const province = provinceColorMap.get(colorKey);
 
-            if (province && province.id !== 'OCEAN') {
-                const ownerCountryId = provinceOwnerMap.get(province.id);
+            // Check cache first
+            let countryRgb = colorCache.get(colorKey);
 
-                if (ownerCountryId) {
-                    const country = allCountryData.get(ownerCountryId);
-                    if (country) {
-                        const countryColor = this.hexToRgb(country.color);
-                        polData[i] = countryColor[0];
-                        polData[i + 1] = countryColor[1];
-                        polData[i + 2] = countryColor[2];
-                        polData[i + 3] = 255;
-                        pixelsColored++;
+            if (countryRgb === undefined) {
+                // Not in cache, compute it
+                const province = provinceColorMap.get(colorKey);
+
+                if (province && province.id !== 'OCEAN') {
+                    const ownerCountryId = provinceOwnerMap.get(province.id);
+                    if (ownerCountryId) {
+                        const country = allCountryData.get(ownerCountryId);
+                        if (country) {
+                            countryRgb = this.hexToRgb(country.color);
+                        } else {
+                            countryRgb = null;
+                        }
+                    } else {
+                        countryRgb = null;
                     }
+                } else {
+                    countryRgb = null;
                 }
+
+                colorCache.set(colorKey, countryRgb);
+            }
+
+            if (countryRgb) {
+                polData[i] = countryRgb[0];
+                polData[i + 1] = countryRgb[1];
+                polData[i + 2] = countryRgb[2];
+                polData[i + 3] = 255;
+                pixelsColored++;
             }
         }
 
