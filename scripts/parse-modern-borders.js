@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
 
-const STATES_DIR = path.join(projectRoot, 'states');
+const STATES_DIR = path.join(projectRoot, 'modern states');
 const OUTPUT_PATH = path.join(projectRoot, 'src', 'provinceAssignments.ts');
 
 // Priority order for SOV states - prefer the most specific modern core
