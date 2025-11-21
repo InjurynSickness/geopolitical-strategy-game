@@ -209,21 +209,21 @@ function hslToHex(h, s, l) {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-// Extract all unique country tags from modern states
+// Extract all unique country tags from provinceAssignments.ts
+// This includes converted tags like RUS, UKR (from SOV split)
 function extractCountryTags() {
-    console.log('[Generator] Reading modern states from:', STATES_DIR);
+    const assignmentsPath = path.join(projectRoot, 'src', 'provinceAssignments.ts');
+    console.log('[Generator] Reading province assignments from:', assignmentsPath);
 
-    const files = fs.readdirSync(STATES_DIR).filter(f => f.endsWith('.txt'));
+    const content = fs.readFileSync(assignmentsPath, 'utf-8');
+    const tagMatches = content.matchAll(/"([A-Z]{3})"/g);
     const tags = new Set();
 
-    for (const file of files) {
-        const content = fs.readFileSync(path.join(STATES_DIR, file), 'utf-8');
-        const ownerMatch = content.match(/owner\s*=\s*([A-Z]{3})/);
-        if (ownerMatch) {
-            tags.add(ownerMatch[1].trim());
-        }
+    for (const match of tagMatches) {
+        tags.add(match[1]);
     }
 
+    console.log(`[Generator] Found ${tags.size} unique country tags`);
     return Array.from(tags).sort();
 }
 
