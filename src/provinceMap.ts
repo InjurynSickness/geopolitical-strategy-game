@@ -16,6 +16,7 @@ import { BorderMapBuilder } from './borders/BorderMapBuilder.js';
 import { CountryEditor } from './editor/CountryEditor.js';
 import { ProvinceSelector } from './editor/ProvinceSelector.js';
 import { BorderGenerator } from './rendering/BorderGenerator.js';
+import { EnhancedTerrainRenderer } from './rendering/EnhancedTerrainRenderer.js';
 import { logger } from './utils/Logger.js';
 
 const MAP_WIDTH = 5632;  // HOI4 map dimensions
@@ -45,6 +46,9 @@ export class ProvinceMap {
     private provinceImage = new Image();
     private riversImage = new Image();
     private waterTextureImage = new Image();
+
+    // Enhanced terrain system with heightmaps, normal maps, and lighting
+    private enhancedTerrainRenderer: EnhancedTerrainRenderer | null = null;
 
     private selectedProvinceId: string | null = null;
     private mapReady = false;
@@ -121,7 +125,7 @@ export class ProvinceMap {
         logger.time('ProvinceMap', 'Total asset loading');
         logger.info('ProvinceMap', '🚀 Starting asset loading...');
         let assetsLoaded = 0;
-        const totalAssets = 4; // terrain, provinces, rivers, water texture
+        const totalAssets = 5; // terrain (enhanced), provinces, rivers, water texture, enhanced terrain system
         const loadedAssets: string[] = [];
 
         const onAssetLoad = (assetName: string) => {
@@ -237,75 +241,110 @@ export class ProvinceMap {
             logger.showDebugPanel();
         };
         this.waterTextureImage.src = './colormap_water_0.png';
+
+        // Initialize enhanced terrain system (heightmap, normal maps, lighting)
+        logger.info('ProvinceMap', '🗻 Initializing HOI4-style enhanced terrain rendering...');
+        this.enhancedTerrainRenderer = new EnhancedTerrainRenderer(
+            MAP_WIDTH,
+            MAP_HEIGHT,
+            () => onAssetLoad('Enhanced Terrain System')
+        );
+        this.enhancedTerrainRenderer.load().catch((error) => {
+            logger.error('ProvinceMap', '❌ Enhanced terrain failed to load', error);
+            logger.showDebugPanel();
+            // Mark as loaded anyway so we don't block
+            onAssetLoad('Enhanced Terrain System');
+        });
     }
 
     private processTerrainImage(): void {
-        logger.info('ProvinceMap', '🗻 Processing terrain atlas (DDS converted) using provinces.png as a mask...', {
-            terrainImageLoaded: this.terrainImage.complete,
-            terrainImageWidth: this.terrainImage.width,
-            terrainImageHeight: this.terrainImage.height,
-            terrainImageSrc: this.terrainImage.src
-        });
         const ctx = this.canvasManager.processedTerrainCtx;
 
-        // Create tiling pattern from atlas (HOI4-style)
-        const pattern = ctx.createPattern(this.terrainImage, 'repeat');
-        if (!pattern) {
-            logger.error('ProvinceMap', '❌ Failed to create terrain pattern - pattern is null');
-            logger.showDebugPanel();
-            return;
-        }
+        // Use enhanced terrain if available (with heightmap-derived normal maps and lighting)
+        if (this.enhancedTerrainRenderer && this.enhancedTerrainRenderer.isReady()) {
+            logger.info('ProvinceMap', '🗻 Using HOI4-style enhanced terrain (normal-mapped + lit)...');
 
-        logger.info('ProvinceMap', '✓ Pattern created successfully, filling canvas...');
+            // Draw the lit terrain
+            ctx.drawImage(this.enhancedTerrainRenderer.getTerrainCanvas(), 0, 0);
 
-        // Fill entire canvas with tiled terrain texture
-        ctx.fillStyle = pattern;
-        ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            // Apply water mask
+            const terrainImageData = ctx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            const terrainData = terrainImageData.data;
 
-        logger.info('ProvinceMap', '✓ Canvas filled with terrain pattern');
+            const maskImageData = this.canvasManager.hiddenCtx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            const maskData = maskImageData.data;
 
-        // Check if terrain was actually drawn
-        const checkData = ctx.getImageData(100, 100, 1, 1);
-        logger.info('ProvinceMap', `🗻 Terrain canvas after pattern fill - sample pixel (100,100):`, {
-            r: checkData.data[0],
-            g: checkData.data[1],
-            b: checkData.data[2],
-            a: checkData.data[3]
-        });
+            let waterPixels = 0;
+            let landPixels = 0;
 
-        const terrainImageData = ctx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
-        const terrainData = terrainImageData.data;
+            // Mask out water areas
+            for (let i = 0; i < terrainData.length; i += 4) {
+                const r = maskData[i];
+                const g = maskData[i + 1];
+                const b = maskData[i + 2];
 
-        const maskImageData = this.canvasManager.hiddenCtx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
-        const maskData = maskImageData.data;
-
-        let waterPixels = 0;
-        let landPixels = 0;
-
-        // Mask out water areas and force land to be fully opaque
-        for (let i = 0; i < terrainData.length; i += 4) {
-            const r = maskData[i];
-            const g = maskData[i + 1];
-            const b = maskData[i + 2];
-
-            // Simple black check is faster than Map lookup
-            // Ocean/water in provinces.png is mostly black (0,0,0) or very dark
-            if (r < 10 && g < 10 && b < 10) {
-                terrainData[i + 3] = 0;  // Make water transparent
-                waterPixels++;
-            } else {
-                terrainData[i + 3] = 255;  // Force land pixels to be fully opaque (atlas has low alpha!)
-                landPixels++;
+                // Ocean/water in provinces.png is black (0,0,0) or very dark
+                if (r < 10 && g < 10 && b < 10) {
+                    terrainData[i + 3] = 0;  // Make water transparent
+                    waterPixels++;
+                } else {
+                    // Keep terrain alpha from enhanced renderer
+                    landPixels++;
+                }
             }
+
+            ctx.putImageData(terrainImageData, 0, 0);
+
+            logger.info('ProvinceMap', '✅ Enhanced terrain (HOI4-style with lighting) processing complete', {
+                waterPixels,
+                landPixels,
+                percentWater: ((waterPixels / (waterPixels + landPixels)) * 100).toFixed(1) + '%'
+            });
+
+        } else {
+            // Fallback to old tiled pattern approach
+            logger.warn('ProvinceMap', '⚠️ Enhanced terrain not ready, using fallback tiled terrain');
+
+            const pattern = ctx.createPattern(this.terrainImage, 'repeat');
+            if (!pattern) {
+                logger.error('ProvinceMap', '❌ Failed to create terrain pattern');
+                logger.showDebugPanel();
+                return;
+            }
+
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+            const terrainImageData = ctx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            const terrainData = terrainImageData.data;
+
+            const maskImageData = this.canvasManager.hiddenCtx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            const maskData = maskImageData.data;
+
+            let waterPixels = 0;
+            let landPixels = 0;
+
+            for (let i = 0; i < terrainData.length; i += 4) {
+                const r = maskData[i];
+                const g = maskData[i + 1];
+                const b = maskData[i + 2];
+
+                if (r < 10 && g < 10 && b < 10) {
+                    terrainData[i + 3] = 0;
+                    waterPixels++;
+                } else {
+                    terrainData[i + 3] = 255;
+                    landPixels++;
+                }
+            }
+
+            ctx.putImageData(terrainImageData, 0, 0);
+
+            logger.info('ProvinceMap', '✅ Fallback terrain processing complete', {
+                waterPixels,
+                landPixels
+            });
         }
-
-        ctx.putImageData(terrainImageData, 0, 0);
-
-        logger.info('ProvinceMap', '✅ Terrain atlas (DDS) processing complete', {
-            waterPixels,
-            landPixels,
-            percentWater: ((waterPixels / (waterPixels + landPixels)) * 100).toFixed(1) + '%'
-        });
     }
 
     // ESC key handler - deselect province
