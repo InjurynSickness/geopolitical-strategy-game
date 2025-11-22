@@ -31,8 +31,15 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.hiddenCanvas, 0, 0);
 
+        // Draw water texture (realistic ocean depth from HOI4 colormap_water)
+        // This layer provides realistic depth variation for oceans/seas
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1.0;
+        ctx.drawImage(this.canvasManager.waterTextureCanvas, 0, 0);
+
         // Draw political colors on top (ONLY where we have ownership data)
         // Strong opacity for clear country colors
+        // Water is transparent on this layer, so ocean texture shows through
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 0.95;  // Strong political colors
         ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);

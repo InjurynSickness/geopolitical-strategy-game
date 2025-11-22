@@ -63,17 +63,10 @@ export class PoliticalMapBuilder {
                 if (province && province.id !== 'OCEAN') {
                     // Check if this is a water province first
                     if (waterProvinceIds.has(province.id)) {
-                        // Water province - sample from water texture for realistic depth
-                        if (waterTextureData) {
-                            countryRgb = [
-                                waterTextureData.data[i],
-                                waterTextureData.data[i + 1],
-                                waterTextureData.data[i + 2]
-                            ];
-                        } else {
-                            // Fallback to flat blue
-                            countryRgb = PoliticalMapBuilder.WATER_COLOR;
-                        }
+                        // Water province - render as TRANSPARENT on political map
+                        // (water texture will be rendered separately)
+                        // This prevents borders from being drawn between water provinces
+                        countryRgb = null;
                     } else {
                         // Land province - get country color
                         const ownerCountryId = provinceOwnerMap.get(province.id);
