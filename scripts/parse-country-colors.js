@@ -268,6 +268,9 @@ export interface CountryData {
 export const allCountryData = new Map<string, CountryData>([
 ${entries.map(e => '    ' + e).join(',\n')}
 ]);
+
+// Backwards compatibility export
+export { allCountryData as countryData };
 `;
 
     fs.writeFileSync(OUTPUT_PATH, output, 'utf-8');

@@ -183,3 +183,6 @@ export const allCountryData = new Map<string, CountryData>([
     ["ZAM", { name: "Zambia", color: "#5326fa" }],
     ["ZIM", { name: "Zimbabwe", color: "#00d25a" }]
 ]);
+
+// Backwards compatibility export
+export { allCountryData as countryData };
