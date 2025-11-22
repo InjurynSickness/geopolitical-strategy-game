@@ -159,6 +159,21 @@ export default function App({ initializeGame, loadingScreen }: AppProps) {
             }, 300);
           };
 
+          // Safety timeout - if map doesn't load in 15 seconds, show error
+          const safetyTimeout = setTimeout(() => {
+            console.error("Map loading timed out after 15 seconds");
+            setShowFigmaLoading(false);
+            alert("Map loading took too long. Please check the console for errors and try refreshing.");
+            delete (window as any).onMapReady;
+          }, 15000);
+
+          // Clear safety timeout when map loads
+          const originalOnMapReady = (window as any).onMapReady;
+          (window as any).onMapReady = () => {
+            clearTimeout(safetyTimeout);
+            originalOnMapReady();
+          };
+
           initializeGame(); // Creates window.gameEngine and starts loading map
           console.log("initializeGame() completed successfully - waiting for map to load...");
         } catch (error) {
