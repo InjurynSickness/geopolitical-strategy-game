@@ -31,6 +31,13 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.hiddenCanvas, 0, 0);
 
+        // Draw terrain texture (processed to be transparent over water)
+        // Shows geographical features like mountains, forests, plains
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 0.4;  // Subtle terrain overlay
+        ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
+        ctx.globalAlpha = 1.0;
+
         // Draw water texture (realistic ocean depth from HOI4 colormap_water)
         // This layer provides realistic depth variation for oceans/seas
         ctx.globalCompositeOperation = 'source-over';
