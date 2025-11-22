@@ -641,7 +641,44 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
                                 onClick={handleExportData}
                                 variant="default"
                             >
-                                Export Data
+                                📥 Export Data
+                            </Button>
+
+                            <Button
+                                className="w-full"
+                                onClick={() => {
+                                    // Create hidden file input
+                                    const input = document.createElement('input');
+                                    input.type = 'file';
+                                    input.accept = '.json';
+                                    input.onchange = (e) => {
+                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                        if (!file) return;
+
+                                        const reader = new FileReader();
+                                        reader.onload = (event) => {
+                                            try {
+                                                const json = event.target?.result as string;
+                                                const imported = EditorDataExporter.importEditorStateJSON(json);
+                                                if (imported) {
+                                                    // Save to localStorage and reload
+                                                    localStorage.setItem('worldpolitik_editor_state', json);
+                                                    alert(`Imported ${imported.countries.size} countries and ${imported.provinceOwners.size} province assignments!\n\nReloading page to apply changes...`);
+                                                    window.location.reload();
+                                                } else {
+                                                    alert('Failed to import: Invalid JSON format');
+                                                }
+                                            } catch (error) {
+                                                alert(`Import failed: ${error}`);
+                                            }
+                                        };
+                                        reader.readAsText(file);
+                                    };
+                                    input.click();
+                                }}
+                                variant="outline"
+                            >
+                                📤 Import JSON
                             </Button>
 
                             <Separator />
