@@ -1,5 +1,7 @@
 // /src/camera/CameraController.ts
 
+import { logger } from '../utils/Logger.js';
+
 export interface Camera {
     x: number;
     y: number;
@@ -36,13 +38,13 @@ export class CameraController {
         // This prevents zooming out beyond the point where entire map is visible
         this.camera.minZoom = Math.max(zoomToFitWidth, zoomToFitHeight) * 1.04;
 
-        console.log('[CameraController] Calculated minZoom:', this.camera.minZoom, {
+        logger.debug('CameraController', `Calculated minZoom: ${this.camera.minZoom.toFixed(4)}`, {
             viewportWidth: this.viewportWidth,
             viewportHeight: this.viewportHeight,
             mapWidth: this.mapWidth,
             mapHeight: this.mapHeight,
-            zoomToFitWidth,
-            zoomToFitHeight
+            zoomToFitWidth: zoomToFitWidth.toFixed(4),
+            zoomToFitHeight: zoomToFitHeight.toFixed(4)
         });
     }
 
@@ -56,7 +58,7 @@ export class CameraController {
         const baseFitZoom = Math.max(zoomToFitWidth, zoomToFitHeight);
         this.camera.zoom = baseFitZoom * 1.04; // User confirmed 0.4329 is perfect fit
 
-        console.log('📐 INITIAL ZOOM SET TO:', this.camera.zoom.toFixed(4), {
+        logger.info('CameraController', `📐 INITIAL ZOOM: ${this.camera.zoom.toFixed(4)}`, {
             zoomToFitWidth: zoomToFitWidth.toFixed(4),
             zoomToFitHeight: zoomToFitHeight.toFixed(4),
             baseFitZoom: baseFitZoom.toFixed(4),
@@ -94,10 +96,8 @@ export class CameraController {
         this.camera.y = mouseY - (mouseY - this.camera.y) * (newZoom / this.camera.zoom);
         this.camera.zoom = newZoom;
 
-        // Debug: Show zoom value in console
-        console.log('🔍 CURRENT ZOOM:', this.camera.zoom.toFixed(4),
-                    '| minZoom:', this.camera.minZoom.toFixed(4),
-                    '| Factor:', zoomFactor);
+        // Debug: Show zoom value in F3 panel
+        logger.info('CameraController', `🔍 ZOOM: ${this.camera.zoom.toFixed(4)} | minZoom: ${this.camera.minZoom.toFixed(4)} | Factor: ${zoomFactor}`);
 
         this.constrainCamera();
     }
@@ -126,15 +126,7 @@ export class CameraController {
     public getMapCoordinates(screenX: number, screenY: number): { x: number, y: number } {
         const x = (screenX - this.camera.x) / this.camera.zoom;
         const y = (screenY - this.camera.y) / this.camera.zoom;
-        const result = { x: Math.floor(x), y: Math.floor(y) };
-
-        console.log('[CameraController] getMapCoordinates:', {
-            screen: { x: screenX, y: screenY },
-            camera: { x: this.camera.x, y: this.camera.y, zoom: this.camera.zoom },
-            map: result
-        });
-
-        return result;
+        return { x: Math.floor(x), y: Math.floor(y) };
     }
 
     public updateViewportSize(width: number, height: number): void {
