@@ -65,10 +65,11 @@ export class MapRenderer {
             this.terrainDebugLogged = true;
         }
 
-        ctx.globalCompositeOperation = 'multiply';  // Blend terrain with political colors
-        ctx.globalAlpha = 0.7;  // Visible terrain overlay
+        ctx.globalCompositeOperation = 'overlay';  // Blend terrain with political colors
+        ctx.globalAlpha = 0.25;  // Subtle terrain overlay
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
         ctx.globalAlpha = 1.0;
+        ctx.globalCompositeOperation = 'source-over';  // Reset blend mode
 
         // Draw rivers
         ctx.globalCompositeOperation = 'source-over';
