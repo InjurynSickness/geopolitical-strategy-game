@@ -71,23 +71,22 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         }
         autosaveTimeoutRef.current = window.setTimeout(() => {
             saveToLocalStorage();
-        }, 1000); // Save 1 second after last change
+        }, 2000); // Save 2 seconds after last change (less aggressive)
     }, [saveToLocalStorage]);
 
-    // Update state when editor changes + trigger autosave
-    // NOTE: Don't call onMapUpdate() here - it causes lag by rebuilding the entire map
-    // on every state change (including province selection). Only rebuild when data actually changes.
+    // Update state when editor changes (NO autosave here to prevent stuttering)
+    // NOTE: Don't call onMapUpdate() or autosave here - it causes lag.
+    // Autosave is triggered manually by edit operations only.
     useEffect(() => {
         const unsubscribe = editor.subscribe(() => {
             setState(editor.getState());
             setCountries(editor.getAllCountries());
-            debouncedAutosave(); // Autosave 1 second after last change
         });
 
         setCountries(editor.getAllCountries());
 
         return unsubscribe;
-    }, [editor, debouncedAutosave]);
+    }, [editor]);
 
     if (!isOpen) {
         return null;
@@ -131,6 +130,7 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
             setNewCountryTag('');
             setNewCountryName('');
             setNewCountryColor('#7d0d18');
+            debouncedAutosave(); // Autosave after creating country
         }
     };
 
@@ -141,6 +141,7 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         setSelectedOwnerChange('');
         setCountrySearchFilter(''); // Clear search after selection
         debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
+        debouncedAutosave(); // Autosave after data change
     };
 
     const handleBulkChangeOwner = (newOwner: string) => {
@@ -149,6 +150,7 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         setSelectedOwnerChange('');
         setCountrySearchFilter(''); // Clear search after selection
         debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
+        debouncedAutosave(); // Autosave after data change
     };
 
     const handleExportData = () => {
@@ -177,15 +179,18 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
     const handleColorChange = (tag: string, color: string) => {
         editor.changeCountryColor(tag, color);
         debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
+        debouncedAutosave(); // Autosave after data change
     };
 
     const handleUnassignProvince = (provinceId: string) => {
         editor.unassignProvince(provinceId);
         debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
+        debouncedAutosave(); // Autosave after data change
     };
 
     const handleDeleteCountry = (tag: string) => {
         editor.deleteCountry(tag);
+        debouncedAutosave(); // Autosave after data change
         // No map update needed - country has no provinces
     };
 
@@ -195,6 +200,7 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
             return;
         }
         editor.renameCountry(tag, newName.trim());
+        debouncedAutosave(); // Autosave after data change
         // No map update needed - names don't affect rendering
     };
 
@@ -206,10 +212,10 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
             clearTimeout(mapUpdateTimeoutRef.current);
         }
 
-        // Debounce the map rebuild (wait 200ms after last change)
+        // Debounce the map rebuild (wait 500ms after last change - longer to prevent stuttering)
         mapUpdateTimeoutRef.current = window.setTimeout(() => {
             onMapUpdate();
-        }, 200);
+        }, 500);
     }, [onMapUpdate]);
 
     // Debounced color change to prevent lag when dragging color picker
@@ -223,10 +229,10 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
             clearTimeout(colorChangeTimeoutRef.current);
         }
 
-        // Debounce the map rebuild (wait 200ms after user stops dragging)
+        // Debounce the map rebuild (wait 500ms after user stops dragging)
         colorChangeTimeoutRef.current = window.setTimeout(() => {
             onMapUpdate();
-        }, 200);
+        }, 500);
     }, [editor, onMapUpdate]);
 
     return (
@@ -454,6 +460,62 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
                                 <div>
                                     <Label className="text-xs text-slate-400">Provinces</Label>
                                     <div className="font-mono text-lg">{selectedCountryData.provinces.size}</div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Annex Country Feature */}
+                                <div>
+                                    <Label className="text-sm mb-2">🌍 Annex Country</Label>
+                                    <p className="text-xs text-slate-400 mb-2">
+                                        Take all provinces from another country
+                                    </p>
+                                    <Select
+                                        value=""
+                                        onValueChange={(targetTag) => {
+                                            const targetCountry = editor.getCountry(targetTag);
+                                            if (!targetCountry) return;
+
+                                            const provinceCount = targetCountry.provinces.size;
+                                            if (provinceCount === 0) {
+                                                alert(`${targetCountry.name} has no provinces to annex`);
+                                                return;
+                                            }
+
+                                            if (confirm(
+                                                `Annex ${targetCountry.name} (${targetTag}) into ${selectedCountryData.name} (${selectedCountryData.tag})?\n\n` +
+                                                `This will transfer ${provinceCount} province${provinceCount === 1 ? '' : 's'} to ${selectedCountryData.name}.`
+                                            )) {
+                                                const provinces = Array.from(targetCountry.provinces);
+                                                editor.assignProvinces(provinces, selectedCountryData.tag);
+                                                debouncedMapUpdate();
+                                                debouncedAutosave(); // Autosave after annexation
+                                                console.log(`[EditorPanel] Annexed ${provinceCount} provinces from ${targetTag} to ${selectedCountryData.tag}`);
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="bg-slate-700 border-slate-600">
+                                            <SelectValue placeholder="Select country to annex..." />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-[300px] z-[9999] bg-slate-800 border-slate-600" position="popper" sideOffset={5}>
+                                            {countries
+                                                .filter(c => c.tag !== selectedCountryData.tag && c.provinces.size > 0)
+                                                .slice(0, 50)
+                                                .map(country => (
+                                                    <SelectItem key={country.tag} value={country.tag} className="focus:bg-slate-700">
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className="w-3 h-3 rounded border border-slate-600"
+                                                                style={{ backgroundColor: country.color }}
+                                                            />
+                                                            <span className="text-white">
+                                                                {country.tag} - {country.name} ({country.provinces.size})
+                                                            </span>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <Separator />
