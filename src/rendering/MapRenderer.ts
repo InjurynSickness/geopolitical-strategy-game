@@ -40,14 +40,7 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.waterTextureCanvas, 0, 0);
 
-        // Draw political colors on top (ONLY where we have ownership data)
-        // Water is transparent on this layer, so ocean texture shows through
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 0.95;  // Strong political colors
-        ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
-        ctx.globalAlpha = 1.0;
-
-        // Draw terrain texture AFTER political colors (processed to be transparent over water)
+        // Draw terrain texture FIRST - this is the primary visual element like in HOI4
         // Shows geographical features like mountains, forests, plains
         if (!this.terrainDebugLogged) {
             const terrainData = this.canvasManager.processedTerrainCtx.getImageData(0, 0, 100, 100);
@@ -65,9 +58,15 @@ export class MapRenderer {
             this.terrainDebugLogged = true;
         }
 
-        ctx.globalCompositeOperation = 'soft-light';  // Soft-light is gentler while still adding depth
-        ctx.globalAlpha = 0.35;  // Subtle terrain blend for natural appearance
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1.0;  // Full terrain visibility - primary visual element
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
+
+        // Draw political colors AFTER terrain as a subtle tint overlay (HOI4 style)
+        // Water is transparent on this layer, so ocean texture shows through
+        ctx.globalCompositeOperation = 'multiply';  // Multiply blend to tint terrain with country colors
+        ctx.globalAlpha = 0.4;  // Subtle political color overlay
+        ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
         ctx.globalAlpha = 1.0;
         ctx.globalCompositeOperation = 'source-over';  // Reset blend mode
 
