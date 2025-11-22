@@ -26,7 +26,9 @@ export class MapRenderer {
         ctx.translate(camera.x, camera.y);
         ctx.scale(camera.zoom, camera.zoom);
 
-        ctx.imageSmoothingEnabled = false;
+        // Enable high-quality image smoothing for better anti-aliasing
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
         // Draw the raw provinces map
         // This shows all 13,382 HOI4 provinces with their original colors
@@ -64,8 +66,9 @@ export class MapRenderer {
 
         // Draw political colors AFTER terrain as a subtle tint overlay (HOI4 style)
         // Water is transparent on this layer, so ocean texture shows through
-        ctx.globalCompositeOperation = 'multiply';  // Multiply blend to tint terrain with country colors
-        ctx.globalAlpha = 0.4;  // Subtle political color overlay
+        // Using overlay blend mode for smoother integration with terrain
+        ctx.globalCompositeOperation = 'overlay';  // Overlay preserves terrain detail while adding color
+        ctx.globalAlpha = 0.5;  // Balanced political color visibility
         ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
         ctx.globalAlpha = 1.0;
         ctx.globalCompositeOperation = 'source-over';  // Reset blend mode

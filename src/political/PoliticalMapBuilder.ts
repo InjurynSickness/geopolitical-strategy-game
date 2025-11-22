@@ -98,7 +98,35 @@ export class PoliticalMapBuilder {
         }
 
         politicalCtx.putImageData(politicalImageData, 0, 0);
+
+        // Apply edge smoothing to reduce jagged boundaries
+        this.smoothPoliticalEdges(politicalCtx);
+
         console.log("Political map texture is built. Pixels colored:", pixelsColored);
+    }
+
+    /**
+     * Apply a subtle smoothing filter to political color boundaries
+     * This reduces the jagged appearance while maintaining border visibility
+     */
+    private smoothPoliticalEdges(ctx: CanvasRenderingContext2D): void {
+        // Create a temporary canvas for the smoothing operation
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = this.mapWidth;
+        tempCanvas.height = this.mapHeight;
+        const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+        if (!tempCtx) return;
+
+        // Copy current political map to temp canvas
+        tempCtx.drawImage(ctx.canvas, 0, 0);
+
+        // Apply a very subtle blur using canvas filter (GPU-accelerated)
+        // 1px blur is enough to smooth jagged edges without losing definition
+        ctx.filter = 'blur(1px)';
+        ctx.drawImage(tempCanvas, 0, 0);
+        ctx.filter = 'none';
+
+        console.log("Applied edge smoothing to political boundaries");
     }
 
     private hexToRgb(hex: string): Color {

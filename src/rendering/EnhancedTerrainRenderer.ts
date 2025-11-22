@@ -50,17 +50,48 @@ export class EnhancedTerrainRenderer {
             undefined, // No specular map yet
             undefined, // No roughness map yet
             {
-                // HOI4-style lighting from top-left
+                // Enhanced HOI4-style lighting for better terrain visibility
                 lightDirection: { x: -0.6, y: -0.6, z: 0.8 },
-                lightIntensity: 0.75,
-                ambientIntensity: 0.45,
-                specularIntensity: 0.1,
+                lightIntensity: 0.85,  // Increased for more pronounced lighting
+                ambientIntensity: 0.35,  // Reduced for better contrast
+                specularIntensity: 0.15,  // Slightly increased for terrain highlights
             }
         );
+
+        // Apply subtle contrast enhancement for better visual clarity
+        this.enhanceContrast(this.litTerrainCanvas);
 
         this.ready = true;
         this.onReady();
         logger.info('EnhancedTerrainRenderer', '✅ Enhanced terrain rendering complete!');
+    }
+
+    /**
+     * Apply subtle contrast enhancement to terrain
+     * This makes terrain features more visually distinct
+     */
+    private enhanceContrast(canvas: HTMLCanvasElement): void {
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return;
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        // Apply contrast adjustment: value = ((value - 128) * contrast) + 128
+        const contrast = 1.15; // 15% contrast boost
+
+        for (let i = 0; i < data.length; i += 4) {
+            // Skip fully transparent pixels
+            if (data[i + 3] === 0) continue;
+
+            // Apply contrast to RGB channels
+            data[i] = Math.max(0, Math.min(255, ((data[i] - 128) * contrast) + 128));       // R
+            data[i + 1] = Math.max(0, Math.min(255, ((data[i + 1] - 128) * contrast) + 128)); // G
+            data[i + 2] = Math.max(0, Math.min(255, ((data[i + 2] - 128) * contrast) + 128)); // B
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        logger.info('EnhancedTerrainRenderer', '📈 Applied contrast enhancement to terrain');
     }
 
     private async loadImages(): Promise<void> {
