@@ -54,6 +54,15 @@ export class CameraController {
         // Use the larger zoom to ensure map fills entire viewport
         this.camera.zoom = Math.max(zoomToFitWidth, zoomToFitHeight);
 
+        console.log('📐 INITIAL ZOOM SET TO:', this.camera.zoom.toFixed(4), {
+            zoomToFitWidth: zoomToFitWidth.toFixed(4),
+            zoomToFitHeight: zoomToFitHeight.toFixed(4),
+            viewportWidth: this.viewportWidth,
+            viewportHeight: this.viewportHeight,
+            mapWidth: this.mapWidth,
+            mapHeight: this.mapHeight
+        });
+
         const mapCenterX = this.mapWidth / 2;
         const mapCenterY = this.mapHeight / 2;
 
@@ -71,7 +80,7 @@ export class CameraController {
 
     public zoom(mouseX: number, mouseY: number, zoomFactor: number): void {
         const newZoom = Math.max(
-            this.camera.minZoom, 
+            this.camera.minZoom,
             Math.min(this.camera.maxZoom, this.camera.zoom * zoomFactor)
         );
 
@@ -80,6 +89,11 @@ export class CameraController {
         this.camera.x = mouseX - (mouseX - this.camera.x) * (newZoom / this.camera.zoom);
         this.camera.y = mouseY - (mouseY - this.camera.y) * (newZoom / this.camera.zoom);
         this.camera.zoom = newZoom;
+
+        // Debug: Show zoom value in console
+        console.log('🔍 CURRENT ZOOM:', this.camera.zoom.toFixed(4),
+                    '| minZoom:', this.camera.minZoom.toFixed(4),
+                    '| Factor:', zoomFactor);
 
         this.constrainCamera();
     }
