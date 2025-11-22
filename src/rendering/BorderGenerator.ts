@@ -2,7 +2,7 @@
 // Extracts border pixels from image data for rendering
 
 import { logger } from '../utils/Logger.js';
-import { provinceColorMap } from '../provinceColors.js';
+import { provinceColorMap } from '../provinceData.js';
 
 export class BorderGenerator {
     /**
