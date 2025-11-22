@@ -27,14 +27,14 @@ export class CameraController {
         this.resetCamera();
     }
 
-    // Calculate minimum zoom to ensure map always fills at least 90% of viewport
+    // Calculate minimum zoom to ensure map always fills viewport perfectly
     private calculateMinZoom(): void {
         const zoomToFitWidth = this.viewportWidth / this.mapWidth;
         const zoomToFitHeight = this.viewportHeight / this.mapHeight;
 
-        // Use the larger of the two to ensure map fills screen
-        // Multiply by 0.9 to allow slight zoom out but not too much
-        this.camera.minZoom = Math.max(zoomToFitWidth, zoomToFitHeight) * 0.9;
+        // Set minimum zoom to perfect fit (user tested: 0.4329)
+        // This prevents zooming out beyond the point where entire map is visible
+        this.camera.minZoom = Math.max(zoomToFitWidth, zoomToFitHeight) * 1.04;
 
         console.log('[CameraController] Calculated minZoom:', this.camera.minZoom, {
             viewportWidth: this.viewportWidth,
