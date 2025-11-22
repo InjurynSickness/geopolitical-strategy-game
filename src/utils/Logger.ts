@@ -26,27 +26,37 @@ export class Logger {
     }
 
     private setupDebugPanel(): void {
-        // Create debug panel in bottom-right corner
-        this.debugPanel = document.createElement('div');
-        this.debugPanel.id = 'debug-panel';
-        this.debugPanel.style.cssText = `
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            width: 400px;
-            max-height: 300px;
-            background: rgba(0, 0, 0, 0.9);
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            padding: 10px;
-            border: 2px solid #00ff00;
-            border-radius: 4px;
-            overflow-y: auto;
-            z-index: 10000;
-            display: none;
-        `;
-        document.body.appendChild(this.debugPanel);
+        // Defer panel creation until DOM is ready
+        const createPanel = () => {
+            // Create debug panel in bottom-right corner
+            this.debugPanel = document.createElement('div');
+            this.debugPanel.id = 'debug-panel';
+            this.debugPanel.style.cssText = `
+                position: fixed;
+                bottom: 10px;
+                right: 10px;
+                width: 400px;
+                max-height: 300px;
+                background: rgba(0, 0, 0, 0.9);
+                color: #00ff00;
+                font-family: 'Courier New', monospace;
+                font-size: 11px;
+                padding: 10px;
+                border: 2px solid #00ff00;
+                border-radius: 4px;
+                overflow-y: auto;
+                z-index: 10000;
+                display: none;
+            `;
+            document.body.appendChild(this.debugPanel);
+        };
+
+        // Wait for DOM to be ready before creating panel
+        if (document.body) {
+            createPanel();
+        } else {
+            document.addEventListener('DOMContentLoaded', createPanel);
+        }
 
         // Toggle with F3 key
         window.addEventListener('keydown', (e) => {
