@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { MenuButton } from "./MenuButton";
 import { provinceToCountryMap } from "../../provinceAssignments.js";
 import { countryData } from "../../countryData.js";
+import { logger } from "../../utils/Logger.js";
 
 interface InteractiveCountrySelectionProps {
   onBack: () => void;
@@ -11,87 +12,92 @@ interface InteractiveCountrySelectionProps {
 }
 
 export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapReady, onLoadingProgress }: InteractiveCountrySelectionProps) {
+  logger.info('InteractiveCountrySelection', '🗺️ Component rendering');
+
   const [selectedCountryId, setSelectedCountryId] = useState<string | null>(null);
   const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('[InteractiveCountrySelection] Component mounted, container:', containerRef.current);
+    logger.info('InteractiveCountrySelection', '📍 useEffect triggered - Component mounted', {
+      hasContainer: !!containerRef.current,
+      containerElement: containerRef.current?.tagName
+    });
 
     if (!containerRef.current) {
-      console.error('[InteractiveCountrySelection] ERROR: No container ref available!');
+      logger.error('InteractiveCountrySelection', '❌ ERROR: No container ref available!');
       return;
     }
 
     let provinceMapInstance: any = null;
 
     // Import the map dynamically
-    console.log('[InteractiveCountrySelection] Starting dynamic import of provinceMap.js...');
+    logger.info('InteractiveCountrySelection', '⏳ Starting dynamic import of provinceMap.js...');
     import('../../provinceMap.js')
       .then(({ ProvinceMap }) => {
-        console.log('[InteractiveCountrySelection] ✓ ProvinceMap module loaded');
+        logger.info('InteractiveCountrySelection', '✅ ProvinceMap module loaded successfully');
 
         // When user clicks a province/country on the map
         const handleCountryClick = (countryId: string) => {
-          console.log('[InteractiveCountrySelection] Country clicked:', countryId);
+          logger.info('InteractiveCountrySelection', `Country clicked: ${countryId}`);
           setSelectedCountryId(countryId);
         };
 
         // When map is fully ready (including borders)
         const handleMapReady = () => {
-          console.log('[InteractiveCountrySelection] ✓✓✓ MAP FULLY READY! ✓✓✓');
+          logger.info('InteractiveCountrySelection', '✅✅✅ MAP FULLY READY! ✅✅✅');
           setMapReady(true);
 
           // ONLY NOW report 100% - map is actually done loading
           if (onLoadingProgress) {
-            console.log('[InteractiveCountrySelection] Reporting ACTUAL completion: 100% READY!');
+            logger.info('InteractiveCountrySelection', 'Reporting ACTUAL completion: 100% READY!');
             onLoadingProgress(100, "READY!");
           }
 
           // Notify parent that map is ready (this will hide the loading screen)
-          console.log('[InteractiveCountrySelection] Calling parent onMapReady callback...');
+          logger.info('InteractiveCountrySelection', 'Calling parent onMapReady callback...');
           onMapReady();
         };
 
-        console.log('[InteractiveCountrySelection] Creating ProvinceMap instance...');
+        logger.info('InteractiveCountrySelection', '🏗️ Creating ProvinceMap instance...');
         try {
           provinceMapInstance = new ProvinceMap(
             containerRef.current!,
             handleCountryClick,
             handleMapReady
           );
-          console.log('[InteractiveCountrySelection] ✓ ProvinceMap instance created, starting asset load...');
+          logger.info('InteractiveCountrySelection', '✅ ProvinceMap instance created, starting asset load...');
         } catch (error) {
-          console.error('[InteractiveCountrySelection] ERROR creating ProvinceMap:', error);
+          logger.error('InteractiveCountrySelection', '❌ ERROR creating ProvinceMap', error);
           throw error;
         }
 
         // Set up the map with country data
-        console.log('[InteractiveCountrySelection] Loading GameStateInitializer...');
+        logger.info('InteractiveCountrySelection', '⏳ Loading GameStateInitializer...');
         import('../../game/GameStateInitializer.js')
           .then(({ GameStateInitializer }) => {
-            console.log('[InteractiveCountrySelection] ✓ GameStateInitializer loaded');
-            console.log('[InteractiveCountrySelection] Initializing game state...');
+            logger.info('InteractiveCountrySelection', '✅ GameStateInitializer loaded');
+            logger.info('InteractiveCountrySelection', 'Initializing game state...');
             const tempGameState = GameStateInitializer.initializeGameState();
-            console.log('[InteractiveCountrySelection] ✓ Game state initialized, updating map...');
+            logger.info('InteractiveCountrySelection', '✅ Game state initialized, updating map...');
 
             provinceMapInstance.updateCountries(tempGameState.countries, countryData);
             provinceMapInstance.setProvinceOwnerMap(provinceToCountryMap);
-            console.log('[InteractiveCountrySelection] ✓ Map updated with countries and provinces');
-            console.log('[InteractiveCountrySelection] Now waiting for ProvinceMap to finish loading assets...');
+            logger.info('InteractiveCountrySelection', '✅ Map updated with countries and provinces');
+            logger.info('InteractiveCountrySelection', 'Now waiting for ProvinceMap to finish loading assets...');
           })
           .catch((error) => {
-            console.error('[InteractiveCountrySelection] ERROR loading GameStateInitializer:', error);
+            logger.error('InteractiveCountrySelection', '❌ ERROR loading GameStateInitializer', error);
           });
       })
       .catch((error) => {
-        console.error('[InteractiveCountrySelection] ERROR loading ProvinceMap module:', error);
+        logger.error('InteractiveCountrySelection', '❌ ERROR loading ProvinceMap module', error);
       });
 
     // Cleanup on unmount
     return () => {
-      console.log('[InteractiveCountrySelection] Component unmounting, cleaning up...');
+      logger.info('InteractiveCountrySelection', '🧹 Component unmounting, cleaning up...');
       if (provinceMapInstance) {
         provinceMapInstance.destroy();
       }
