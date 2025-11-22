@@ -282,7 +282,7 @@ export class ProvinceMap {
         let waterPixels = 0;
         let landPixels = 0;
 
-        // Mask out water areas
+        // Mask out water areas and force land to be fully opaque
         for (let i = 0; i < terrainData.length; i += 4) {
             const r = maskData[i];
             const g = maskData[i + 1];
@@ -294,6 +294,7 @@ export class ProvinceMap {
                 terrainData[i + 3] = 0;  // Make water transparent
                 waterPixels++;
             } else {
+                terrainData[i + 3] = 255;  // Force land pixels to be fully opaque (atlas has low alpha!)
                 landPixels++;
             }
         }
