@@ -131,6 +131,37 @@ function decompressDXT5(buffer, width, height) {
     return pixels;
 }
 
+// Read uncompressed RGBA/BGRA data
+function readUncompressed(buffer, width, height) {
+    const pixels = Buffer.alloc(width * height * 4);
+    const dataOffset = 128;
+
+    // Check byte order from pixel format masks
+    const rMask = buffer.readUInt32LE(92);
+    const isBGRA = rMask === 0xff0000; // R is in high byte = BGRA order
+
+    for (let i = 0; i < width * height; i++) {
+        const srcOffset = dataOffset + i * 4;
+        const dstOffset = i * 4;
+
+        if (isBGRA) {
+            // BGRA to RGBA
+            pixels[dstOffset] = buffer[srcOffset + 2];     // R
+            pixels[dstOffset + 1] = buffer[srcOffset + 1]; // G
+            pixels[dstOffset + 2] = buffer[srcOffset];     // B
+            pixels[dstOffset + 3] = buffer[srcOffset + 3]; // A
+        } else {
+            // Already RGBA
+            pixels[dstOffset] = buffer[srcOffset];
+            pixels[dstOffset + 1] = buffer[srcOffset + 1];
+            pixels[dstOffset + 2] = buffer[srcOffset + 2];
+            pixels[dstOffset + 3] = buffer[srcOffset + 3];
+        }
+    }
+
+    return pixels;
+}
+
 // Convert DDS to PNG
 async function convertDDSToPNG(inputPath, outputPath) {
     try {
@@ -139,14 +170,19 @@ async function convertDDSToPNG(inputPath, outputPath) {
         const buffer = fs.readFileSync(inputPath);
         const { width, height, fourCC } = parseDDSHeader(buffer);
 
-        console.log(`[Converter] Format: ${fourCC}, Size: ${width}x${height}`);
+        console.log(`[Converter] Format: ${fourCC || 'RGBA32'}, Size: ${width}x${height}`);
 
-        if (fourCC !== 'DXT5') {
-            throw new Error(`Unsupported format: ${fourCC} (only DXT5 supported)`);
+        let pixels;
+
+        if (fourCC === 'DXT5') {
+            // Decompress DXT5
+            pixels = decompressDXT5(buffer, width, height);
+        } else if (!fourCC || fourCC.replace(/\0/g, '').trim() === '') {
+            // Uncompressed RGBA/BGRA (fourCC is null bytes or empty)
+            pixels = readUncompressed(buffer, width, height);
+        } else {
+            throw new Error(`Unsupported format: '${fourCC}'`);
         }
-
-        // Decompress DXT5
-        const pixels = decompressDXT5(buffer, width, height);
 
         // Create PNG
         const png = new PNG({
@@ -182,6 +218,7 @@ async function convertDDSToPNG(inputPath, outputPath) {
 
 // Convert all water textures
 const conversions = [
+    // Water textures
     {
         input: path.join(projectRoot, 'terrain', 'colormap_water_0.dds'),
         output: path.join(projectRoot, 'public', 'colormap_water_0.png')
@@ -193,6 +230,19 @@ const conversions = [
     {
         input: path.join(projectRoot, 'terrain', 'colormap_water_2.dds'),
         output: path.join(projectRoot, 'public', 'colormap_water_2.png')
+    },
+    // Border textures
+    {
+        input: path.join(projectRoot, 'terrain', 'border_country_0.dds'),
+        output: path.join(projectRoot, 'public', 'border_country_0.png')
+    },
+    {
+        input: path.join(projectRoot, 'terrain', 'border_sea_0.dds'),
+        output: path.join(projectRoot, 'public', 'border_sea_0.png')
+    },
+    {
+        input: path.join(projectRoot, 'terrain', 'border_province_0.dds'),
+        output: path.join(projectRoot, 'public', 'border_province_0.png')
     }
 ];
 
