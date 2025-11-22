@@ -243,20 +243,26 @@ export class ProvinceMap {
         logger.info('ProvinceMap', '🗻 Processing terrain atlas (DDS converted) using provinces.png as a mask...', {
             terrainImageLoaded: this.terrainImage.complete,
             terrainImageWidth: this.terrainImage.width,
-            terrainImageHeight: this.terrainImage.height
+            terrainImageHeight: this.terrainImage.height,
+            terrainImageSrc: this.terrainImage.src
         });
         const ctx = this.canvasManager.processedTerrainCtx;
 
         // Create tiling pattern from atlas (HOI4-style)
         const pattern = ctx.createPattern(this.terrainImage, 'repeat');
         if (!pattern) {
-            logger.error('ProvinceMap', 'Failed to create terrain pattern');
+            logger.error('ProvinceMap', '❌ Failed to create terrain pattern - pattern is null');
+            logger.showDebugPanel();
             return;
         }
+
+        logger.info('ProvinceMap', '✓ Pattern created successfully, filling canvas...');
 
         // Fill entire canvas with tiled terrain texture
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+        logger.info('ProvinceMap', '✓ Canvas filled with terrain pattern');
 
         // Check if terrain was actually drawn
         const checkData = ctx.getImageData(100, 100, 1, 1);
