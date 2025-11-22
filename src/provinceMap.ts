@@ -370,8 +370,8 @@ export class ProvinceMap {
             }
         }
 
-        // Draw flickering orange province selection
-        if (this.selectedProvinceId && !this.isEditorMode) {
+        // Draw flickering orange province selection (visible in all modes)
+        if (this.selectedProvinceId) {
             // Get or generate border pixels for selected province
             let borders = this.selectedProvinceBorderCache.get(this.selectedProvinceId);
 
@@ -620,7 +620,31 @@ export class ProvinceMap {
     
     public setProvinceOwnerMap(ownerMap: Map<string, string>): void {
         console.log("Loading province owner map...");
-        this.provinceOwnerMap = new Map(ownerMap);
+
+        // Try to load saved editor state from localStorage
+        let loadedFromStorage = false;
+        try {
+            const saved = localStorage.getItem('worldpolitik_editor_state');
+            if (saved) {
+                console.log('[ProvinceMap] Found saved editor state in localStorage, loading...');
+                const { EditorDataExporter } = require('./editor/EditorDataExporter');
+                const imported = EditorDataExporter.importEditorStateJSON(saved);
+                if (imported) {
+                    // Use saved data instead of default
+                    this.allCountryData = imported.countries;
+                    this.provinceOwnerMap = imported.provinceOwners;
+                    loadedFromStorage = true;
+                    console.log('[ProvinceMap] Loaded saved state:', imported.countries.size, 'countries,', imported.provinceOwners.size, 'provinces');
+                }
+            }
+        } catch (error) {
+            console.error('[ProvinceMap] Failed to load saved state:', error);
+        }
+
+        // If no saved state, use default
+        if (!loadedFromStorage) {
+            this.provinceOwnerMap = new Map(ownerMap);
+        }
 
         // Initialize CountryEditor with current map data
         if (this.allCountryData.size > 0) {

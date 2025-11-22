@@ -48,19 +48,46 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         );
     }, [countries, countrySearchFilter]);
 
-    // Update state when editor changes
+    // Autosave to localStorage
+    const autosaveTimeoutRef = useRef<number | null>(null);
+    const saveToLocalStorage = useCallback(() => {
+        try {
+            const countries = new Map<string, EditableCountry>();
+            for (const country of editor.getAllCountries()) {
+                countries.set(country.tag, country);
+            }
+            const provinceOwners = new Map(state.provinceOwners);
+            const json = EditorDataExporter.exportEditorStateJSON(countries, provinceOwners);
+            localStorage.setItem('worldpolitik_editor_state', json);
+            console.log('[EditorPanel] Autosaved to localStorage');
+        } catch (error) {
+            console.error('[EditorPanel] Failed to autosave:', error);
+        }
+    }, [editor, state.provinceOwners]);
+
+    const debouncedAutosave = useCallback(() => {
+        if (autosaveTimeoutRef.current) {
+            clearTimeout(autosaveTimeoutRef.current);
+        }
+        autosaveTimeoutRef.current = window.setTimeout(() => {
+            saveToLocalStorage();
+        }, 1000); // Save 1 second after last change
+    }, [saveToLocalStorage]);
+
+    // Update state when editor changes + trigger autosave
     // NOTE: Don't call onMapUpdate() here - it causes lag by rebuilding the entire map
     // on every state change (including province selection). Only rebuild when data actually changes.
     useEffect(() => {
         const unsubscribe = editor.subscribe(() => {
             setState(editor.getState());
             setCountries(editor.getAllCountries());
+            debouncedAutosave(); // Autosave 1 second after last change
         });
 
         setCountries(editor.getAllCountries());
 
         return unsubscribe;
-    }, [editor]);
+    }, [editor, debouncedAutosave]);
 
     if (!isOpen) {
         return null;
@@ -113,7 +140,7 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         editor.assignProvince(selectedProvince, newOwner);
         setSelectedOwnerChange('');
         setCountrySearchFilter(''); // Clear search after selection
-        onMapUpdate(); // Rebuild map after province assignment
+        debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
     };
 
     const handleBulkChangeOwner = (newOwner: string) => {
@@ -121,7 +148,7 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         editor.assignProvinces(provinces, newOwner);
         setSelectedOwnerChange('');
         setCountrySearchFilter(''); // Clear search after selection
-        onMapUpdate(); // Rebuild map after bulk assignment
+        debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
     };
 
     const handleExportData = () => {
@@ -149,12 +176,12 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
 
     const handleColorChange = (tag: string, color: string) => {
         editor.changeCountryColor(tag, color);
-        onMapUpdate(); // Rebuild map after color change
+        debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
     };
 
     const handleUnassignProvince = (provinceId: string) => {
         editor.unassignProvince(provinceId);
-        onMapUpdate(); // Rebuild map after unassigning province
+        debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
     };
 
     const handleDeleteCountry = (tag: string) => {
@@ -171,19 +198,36 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         // No map update needed - names don't affect rendering
     };
 
+    // Debounced map update to prevent stuttering during rapid changes
+    const mapUpdateTimeoutRef = useRef<number | null>(null);
+    const debouncedMapUpdate = useCallback(() => {
+        // Clear previous timeout
+        if (mapUpdateTimeoutRef.current) {
+            clearTimeout(mapUpdateTimeoutRef.current);
+        }
+
+        // Debounce the map rebuild (wait 200ms after last change)
+        mapUpdateTimeoutRef.current = window.setTimeout(() => {
+            onMapUpdate();
+        }, 200);
+    }, [onMapUpdate]);
+
     // Debounced color change to prevent lag when dragging color picker
     const colorChangeTimeoutRef = useRef<number | null>(null);
     const handleColorChangeDebounced = useCallback((tag: string, color: string) => {
+        // Immediately update editor state (instant visual feedback in UI)
+        editor.changeCountryColor(tag, color);
+
         // Clear previous timeout
         if (colorChangeTimeoutRef.current) {
             clearTimeout(colorChangeTimeoutRef.current);
         }
 
-        // Debounce the map rebuild (wait 150ms after user stops dragging)
+        // Debounce the map rebuild (wait 200ms after user stops dragging)
         colorChangeTimeoutRef.current = window.setTimeout(() => {
-            handleColorChange(tag, color);
-        }, 150);
-    }, []);
+            onMapUpdate();
+        }, 200);
+    }, [editor, onMapUpdate]);
 
     return (
         <div
@@ -501,6 +545,55 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
                             >
                                 Export Data
                             </Button>
+
+                            <Separator />
+
+                            <Button
+                                className="w-full"
+                                onClick={saveToLocalStorage}
+                                variant="default"
+                            >
+                                💾 Save Now
+                            </Button>
+
+                            <Button
+                                className="w-full"
+                                onClick={() => {
+                                    const saved = localStorage.getItem('worldpolitik_editor_state');
+                                    if (!saved) {
+                                        alert('No saved state found in localStorage');
+                                        return;
+                                    }
+                                    if (confirm('Load saved state? This will override current changes.')) {
+                                        const imported = EditorDataExporter.importEditorStateJSON(saved);
+                                        if (imported) {
+                                            // Reload the page to reinitialize with saved state
+                                            alert('State loaded! Reloading page to apply changes.');
+                                            window.location.reload();
+                                        } else {
+                                            alert('Failed to load saved state');
+                                        }
+                                    }
+                                }}
+                                variant="outline"
+                            >
+                                📂 Load Saved
+                            </Button>
+
+                            <Button
+                                className="w-full"
+                                onClick={() => {
+                                    if (confirm('Clear saved state from localStorage?')) {
+                                        localStorage.removeItem('worldpolitik_editor_state');
+                                        alert('Saved state cleared');
+                                    }
+                                }}
+                                variant="outline"
+                            >
+                                🗑️ Clear Saved
+                            </Button>
+
+                            <Separator />
 
                             <div className="flex gap-2">
                                 <Button
