@@ -18,7 +18,8 @@ export class PoliticalMapBuilder {
     public buildPoliticalMap(
         politicalCtx: CanvasRenderingContext2D,
         provinceOwnerMap: Map<string, string>,
-        allCountryData: Map<string, CountryData>
+        allCountryData: Map<string, CountryData>,
+        waterTextureCtx?: CanvasRenderingContext2D
     ): void {
         console.log("Building political map texture...");
         console.log("Country data size:", allCountryData.size);
@@ -34,6 +35,13 @@ export class PoliticalMapBuilder {
         // Pre-compute color cache: province color -> country RGB color
         // This avoids repeated Map lookups and hex-to-RGB conversions
         const colorCache = new Map<string, [number, number, number] | null>();
+
+        // Pre-fetch water texture if available
+        let waterTextureData: ImageData | null = null;
+        if (waterTextureCtx) {
+            console.log("Using water texture for realistic ocean rendering");
+            waterTextureData = waterTextureCtx.getImageData(0, 0, this.mapWidth, this.mapHeight);
+        }
 
         let pixelsColored = 0;
         for (let i = 0; i < data.length; i += 4) {
@@ -55,8 +63,17 @@ export class PoliticalMapBuilder {
                 if (province && province.id !== 'OCEAN') {
                     // Check if this is a water province first
                     if (waterProvinceIds.has(province.id)) {
-                        // Water province - color it blue
-                        countryRgb = PoliticalMapBuilder.WATER_COLOR;
+                        // Water province - sample from water texture for realistic depth
+                        if (waterTextureData) {
+                            countryRgb = [
+                                waterTextureData.data[i],
+                                waterTextureData.data[i + 1],
+                                waterTextureData.data[i + 2]
+                            ];
+                        } else {
+                            // Fallback to flat blue
+                            countryRgb = PoliticalMapBuilder.WATER_COLOR;
+                        }
                     } else {
                         // Land province - get country color
                         const ownerCountryId = provinceOwnerMap.get(province.id);

@@ -35,6 +35,7 @@ export class ProvinceMap {
     private terrainImage = new Image();
     private provinceImage = new Image();
     private riversImage = new Image();
+    private waterTextureImage = new Image();
 
     private selectedProvinceId: string | null = null;
     private mapReady = false;
@@ -109,7 +110,7 @@ export class ProvinceMap {
     private loadAssets(): void {
         console.log('[ProvinceMap] Starting asset loading...');
         let assetsLoaded = 0;
-        const totalAssets = 3;
+        const totalAssets = 4; // terrain, provinces, rivers, water texture
         const loadedAssets: string[] = [];
 
         const onAssetLoad = (assetName: string) => {
@@ -200,6 +201,23 @@ export class ProvinceMap {
             console.error('[ProvinceMap] Attempted path: ./rivers.png');
         };
         this.riversImage.src = './rivers.png';
+
+        console.log('[ProvinceMap] Loading water texture...');
+        this.waterTextureImage.onload = () => {
+            console.log('[ProvinceMap] Drawing water texture to canvas...');
+            try {
+                this.canvasManager.waterTextureCtx.drawImage(this.waterTextureImage, 0, 0, MAP_WIDTH, MAP_HEIGHT);
+                console.log('[ProvinceMap] ✓ Water texture drawn');
+            } catch (error) {
+                console.error('[ProvinceMap] ERROR drawing water texture:', error);
+            }
+            onAssetLoad('colormap_water_0.png');
+        };
+        this.waterTextureImage.onerror = (e) => {
+            console.error('[ProvinceMap] ✗ FAILED to load colormap_water_0.png:', e);
+            console.error('[ProvinceMap] Attempted path: ./colormap_water_0.png');
+        };
+        this.waterTextureImage.src = './colormap_water_0.png';
     }
 
     private processTerrainImage(): void {
@@ -513,7 +531,12 @@ export class ProvinceMap {
 
     private buildPoliticalMap(): void {
         if (!this.mapReady || !this.allCountryData) return;
-        this.politicalMapBuilder.buildPoliticalMap(this.canvasManager.politicalCtx, this.provinceOwnerMap, this.allCountryData);
+        this.politicalMapBuilder.buildPoliticalMap(
+            this.canvasManager.politicalCtx,
+            this.provinceOwnerMap,
+            this.allCountryData,
+            this.canvasManager.waterTextureCtx
+        );
         this.politicalMapReady = true;
     }
 

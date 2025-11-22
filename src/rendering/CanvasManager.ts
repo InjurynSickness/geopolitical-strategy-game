@@ -29,6 +29,10 @@ export class CanvasManager {
     public processedTerrainCanvas: HTMLCanvasElement;
     public processedTerrainCtx: CanvasRenderingContext2D;
 
+    // Water texture canvas
+    public waterTextureCanvas: HTMLCanvasElement;
+    public waterTextureCtx: CanvasRenderingContext2D;
+
     constructor(
         private container: HTMLElement,
         private mapWidth: number,
@@ -36,24 +40,27 @@ export class CanvasManager {
     ) {
         this.visibleCanvas = this.createVisibleCanvas();
         this.visibleCtx = this.visibleCanvas.getContext('2d')!;
-        
+
         this.hiddenCanvas = this.createOffscreenCanvas(true);
         this.hiddenCtx = this.hiddenCanvas.getContext('2d', { willReadFrequently: true })!;
-        
+
         this.politicalCanvas = this.createOffscreenCanvas();
         this.politicalCtx = this.politicalCanvas.getContext('2d')!;
-        
+
         this.overlayCanvas = this.createOffscreenCanvas();
         this.overlayCtx = this.overlayCanvas.getContext('2d')!;
-        
+
         this.borderCanvas = this.createOffscreenCanvas();
         this.borderCtx = this.borderCanvas.getContext('2d')!;
-        
+
         this.recoloredRiversCanvas = this.createOffscreenCanvas();
         this.recoloredRiversCtx = this.recoloredRiversCanvas.getContext('2d')!;
-        
+
         this.processedTerrainCanvas = this.createOffscreenCanvas();
         this.processedTerrainCtx = this.processedTerrainCanvas.getContext('2d', { willReadFrequently: true })!;
+
+        this.waterTextureCanvas = this.createOffscreenCanvas();
+        this.waterTextureCtx = this.waterTextureCanvas.getContext('2d', { willReadFrequently: true })!;
     }
 
     private createVisibleCanvas(): HTMLCanvasElement {
