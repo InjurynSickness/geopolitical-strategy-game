@@ -140,6 +140,11 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         editor.assignProvince(selectedProvince, newOwner);
         setSelectedOwnerChange('');
         setCountrySearchFilter(''); // Clear search after selection
+
+        // Maintain selection after assignment - select the province again with new owner
+        editor.selectProvince(selectedProvince);
+        editor.selectCountry(newOwner); // Select the new owner country
+
         debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
         debouncedAutosave(); // Autosave after data change
     };
@@ -149,6 +154,10 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
         editor.assignProvinces(provinces, newOwner);
         setSelectedOwnerChange('');
         setCountrySearchFilter(''); // Clear search after selection
+
+        // Maintain selection - keep provinces selected and select new owner
+        editor.selectCountry(newOwner);
+
         debouncedMapUpdate(); // Debounced rebuild to prevent stuttering
         debouncedAutosave(); // Autosave after data change
     };
@@ -465,8 +474,8 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
                                 <Separator />
 
                                 {/* Annex Country Feature */}
-                                <div>
-                                    <Label className="text-sm mb-2">🌍 Annex Country</Label>
+                                <div className="bg-slate-700 p-3 rounded-md border border-orange-500/30">
+                                    <Label className="text-sm mb-2 font-bold text-orange-400">🌍 Annex Country</Label>
                                     <p className="text-xs text-slate-400 mb-2">
                                         Take all provinces from another country
                                     </p>
@@ -488,6 +497,10 @@ const EditorPanelComponent: React.FC<EditorPanelProps> = ({
                                             )) {
                                                 const provinces = Array.from(targetCountry.provinces);
                                                 editor.assignProvinces(provinces, selectedCountryData.tag);
+
+                                                // Maintain selection after annexation
+                                                editor.selectCountry(selectedCountryData.tag);
+
                                                 debouncedMapUpdate();
                                                 debouncedAutosave(); // Autosave after annexation
                                                 console.log(`[EditorPanel] Annexed ${provinceCount} provinces from ${targetTag} to ${selectedCountryData.tag}`);
