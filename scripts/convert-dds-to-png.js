@@ -216,7 +216,7 @@ async function convertDDSToPNG(inputPath, outputPath) {
     }
 }
 
-// Convert all water textures
+// Convert all textures
 const conversions = [
     // Water textures
     {
@@ -230,6 +230,19 @@ const conversions = [
     {
         input: path.join(projectRoot, 'terrain', 'colormap_water_2.dds'),
         output: path.join(projectRoot, 'public', 'colormap_water_2.png')
+    },
+    // Terrain atlases
+    {
+        input: path.join(projectRoot, 'terrain', 'atlas0.dds'),
+        output: path.join(projectRoot, 'public', 'terrain_atlas0.png')
+    },
+    {
+        input: path.join(projectRoot, 'terrain', 'atlas1.dds'),
+        output: path.join(projectRoot, 'public', 'terrain_atlas1.png')
+    },
+    {
+        input: path.join(projectRoot, 'terrain', 'atlas2.dds'),
+        output: path.join(projectRoot, 'public', 'terrain_atlas2.png')
     },
     // Border textures
     {

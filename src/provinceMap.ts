@@ -41,6 +41,7 @@ export class ProvinceMap {
     private provinceSelector: ProvinceSelector | null = null;
 
     private terrainImage = new Image();
+    private terrainAtlasImage = new Image(); // New: DDS terrain atlas
     private provinceImage = new Image();
     private riversImage = new Image();
     private waterTextureImage = new Image();
@@ -183,13 +184,13 @@ export class ProvinceMap {
             }
         };
 
-        logger.info('ProvinceMap', '📥 Loading terrain.png...');
-        this.terrainImage.onload = () => onAssetLoad('terrain.png');
+        logger.info('ProvinceMap', '📥 Loading terrain atlas...');
+        this.terrainImage.onload = () => onAssetLoad('terrain_atlas0.png');
         this.terrainImage.onerror = (e) => {
-            logger.error('ProvinceMap', '❌ FAILED to load terrain.png', { path: './terrain.png', error: e });
+            logger.error('ProvinceMap', '❌ FAILED to load terrain_atlas0.png', { path: './terrain_atlas0.png', error: e });
             logger.showDebugPanel(); // Auto-show debug panel on error
         };
-        this.terrainImage.src = './terrain.png';
+        this.terrainImage.src = './terrain_atlas0.png';
 
         logger.info('ProvinceMap', '📥 Loading provinces.png...');
         this.provinceImage.onload = () => onAssetLoad('provinces.png');
@@ -239,19 +240,27 @@ export class ProvinceMap {
     }
 
     private processTerrainImage(): void {
-        logger.info('ProvinceMap', '🗻 Processing terrain.png using provinces.png as a mask...', {
+        logger.info('ProvinceMap', '🗻 Processing terrain atlas (DDS converted) using provinces.png as a mask...', {
             terrainImageLoaded: this.terrainImage.complete,
             terrainImageWidth: this.terrainImage.width,
             terrainImageHeight: this.terrainImage.height
         });
         const ctx = this.canvasManager.processedTerrainCtx;
 
-        // Draw terrain image to canvas
-        ctx.drawImage(this.terrainImage, 0, 0);
+        // Create tiling pattern from atlas (HOI4-style)
+        const pattern = ctx.createPattern(this.terrainImage, 'repeat');
+        if (!pattern) {
+            logger.error('ProvinceMap', 'Failed to create terrain pattern');
+            return;
+        }
+
+        // Fill entire canvas with tiled terrain texture
+        ctx.fillStyle = pattern;
+        ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
         // Check if terrain was actually drawn
         const checkData = ctx.getImageData(100, 100, 1, 1);
-        logger.info('ProvinceMap', `🗻 Terrain canvas after drawImage - sample pixel (100,100):`, {
+        logger.info('ProvinceMap', `🗻 Terrain canvas after pattern fill - sample pixel (100,100):`, {
             r: checkData.data[0],
             g: checkData.data[1],
             b: checkData.data[2],
@@ -267,8 +276,7 @@ export class ProvinceMap {
         let waterPixels = 0;
         let landPixels = 0;
 
-        // Optimized: Process all pixels at once but with simpler check
-        // This is faster than chunking for this use case
+        // Mask out water areas
         for (let i = 0; i < terrainData.length; i += 4) {
             const r = maskData[i];
             const g = maskData[i + 1];
@@ -286,7 +294,7 @@ export class ProvinceMap {
 
         ctx.putImageData(terrainImageData, 0, 0);
 
-        logger.info('ProvinceMap', '✅ Terrain.png processing complete', {
+        logger.info('ProvinceMap', '✅ Terrain atlas (DDS) processing complete', {
             waterPixels,
             landPixels,
             percentWater: ((waterPixels / (waterPixels + landPixels)) * 100).toFixed(1) + '%'

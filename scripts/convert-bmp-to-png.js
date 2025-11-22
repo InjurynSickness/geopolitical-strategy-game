@@ -22,6 +22,7 @@ async function main() {
         await convertBMP('provinces.bmp', 'provinces.png');
         await convertBMP('terrain.bmp', 'terrain.png');
         await convertBMP('rivers.bmp', 'rivers.png');
+        await convertBMP('heightmap.bmp', 'heightmap.png');
 
         console.log('\n✅ All files converted successfully!');
         console.log('The map will now load in the browser.');
