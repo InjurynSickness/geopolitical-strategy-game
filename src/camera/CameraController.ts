@@ -47,15 +47,19 @@ export class CameraController {
     }
 
     public resetCamera(): void {
-        const initialZoomMultiplier = 2.0;
-        this.camera.zoom = initialZoomMultiplier;
-        
+        // Calculate zoom to perfectly fit the map in viewport (no black borders)
+        const zoomToFitWidth = this.viewportWidth / this.mapWidth;
+        const zoomToFitHeight = this.viewportHeight / this.mapHeight;
+
+        // Use the larger zoom to ensure map fills entire viewport
+        this.camera.zoom = Math.max(zoomToFitWidth, zoomToFitHeight);
+
         const mapCenterX = this.mapWidth / 2;
         const mapCenterY = this.mapHeight / 2;
-        
+
         this.camera.x = (this.viewportWidth / 2) - (mapCenterX * this.camera.zoom);
         this.camera.y = (this.viewportHeight / 2) - (mapCenterY * this.camera.zoom);
-        
+
         this.constrainCamera();
     }
 
