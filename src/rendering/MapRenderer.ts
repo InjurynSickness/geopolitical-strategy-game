@@ -2,8 +2,11 @@
 
 import { CanvasManager } from './CanvasManager.js';
 import { CameraController } from '../camera/CameraController.js';
+import { logger } from '../utils/Logger.js';
 
 export class MapRenderer {
+    private terrainDebugLogged = false;
+
     constructor(
         private canvasManager: CanvasManager,
         private cameraController: CameraController
@@ -33,6 +36,22 @@ export class MapRenderer {
 
         // Draw terrain texture (processed to be transparent over water)
         // Shows geographical features like mountains, forests, plains
+        if (!this.terrainDebugLogged) {
+            const terrainData = this.canvasManager.processedTerrainCtx.getImageData(0, 0, 100, 100);
+            let hasNonZero = false;
+            for (let i = 0; i < terrainData.data.length; i++) {
+                if (terrainData.data[i] !== 0) {
+                    hasNonZero = true;
+                    break;
+                }
+            }
+            logger.info('MapRenderer', `🗻 Terrain canvas check: ${hasNonZero ? 'HAS DATA' : 'EMPTY'}`, {
+                width: this.canvasManager.processedTerrainCanvas.width,
+                height: this.canvasManager.processedTerrainCanvas.height
+            });
+            this.terrainDebugLogged = true;
+        }
+
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 0.4;  // Subtle terrain overlay
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);

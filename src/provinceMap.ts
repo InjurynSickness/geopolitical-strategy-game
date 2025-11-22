@@ -239,16 +239,33 @@ export class ProvinceMap {
     }
 
     private processTerrainImage(): void {
-        logger.debug('ProvinceMap', 'Processing terrain.png using provinces.png as a mask...');
+        logger.info('ProvinceMap', '🗻 Processing terrain.png using provinces.png as a mask...', {
+            terrainImageLoaded: this.terrainImage.complete,
+            terrainImageWidth: this.terrainImage.width,
+            terrainImageHeight: this.terrainImage.height
+        });
         const ctx = this.canvasManager.processedTerrainCtx;
 
+        // Draw terrain image to canvas
         ctx.drawImage(this.terrainImage, 0, 0);
+
+        // Check if terrain was actually drawn
+        const checkData = ctx.getImageData(100, 100, 1, 1);
+        logger.info('ProvinceMap', `🗻 Terrain canvas after drawImage - sample pixel (100,100):`, {
+            r: checkData.data[0],
+            g: checkData.data[1],
+            b: checkData.data[2],
+            a: checkData.data[3]
+        });
 
         const terrainImageData = ctx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
         const terrainData = terrainImageData.data;
 
         const maskImageData = this.canvasManager.hiddenCtx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
         const maskData = maskImageData.data;
+
+        let waterPixels = 0;
+        let landPixels = 0;
 
         // Optimized: Process all pixels at once but with simpler check
         // This is faster than chunking for this use case
@@ -260,12 +277,20 @@ export class ProvinceMap {
             // Simple black check is faster than Map lookup
             // Ocean/water in provinces.png is mostly black (0,0,0) or very dark
             if (r < 10 && g < 10 && b < 10) {
-                terrainData[i + 3] = 0;
+                terrainData[i + 3] = 0;  // Make water transparent
+                waterPixels++;
+            } else {
+                landPixels++;
             }
         }
 
         ctx.putImageData(terrainImageData, 0, 0);
-        logger.debug('ProvinceMap', 'Terrain.png processing complete. Ocean is now transparent.');
+
+        logger.info('ProvinceMap', '✅ Terrain.png processing complete', {
+            waterPixels,
+            landPixels,
+            percentWater: ((waterPixels / (waterPixels + landPixels)) * 100).toFixed(1) + '%'
+        });
     }
 
     // ESC key handler - deselect province
