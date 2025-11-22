@@ -11,14 +11,26 @@ import { ProvinceMap } from './provinceMap.js';
 import { provinceToCountryMap } from './provinceAssignments.js';
 import { countryData } from './countryData.js';
 import { EditorOverlay } from './components/EditorOverlay.js';
+import { eventBus } from './core/EventBus.js';
+import { timeSystem } from './core/TimeSystem.js';
+import { gameLoop } from './core/GameLoop.js';
+import { logger } from './utils/Logger.js';
+import { TimeControls } from './components/TimeControls.js';
 
 export function initializeFullGame(): void {
     try {
-        console.log('Initializing full game...');
+        logger.info('gameInit', '🎮 Initializing full game...');
+
+        // 0. Initialize core systems FIRST
+        logger.info('gameInit', 'Initializing core systems...');
+        // Event bus and time system are singletons - just get instances
+        const _ = eventBus;  // Ensure singleton is created
+        const __ = timeSystem;  // Ensure singleton is created
+        logger.info('gameInit', '✅ Core systems initialized');
 
         // 1. Initialize game state
         const gameState = GameStateInitializer.initializeGameState();
-        console.log('Game state initialized with', gameState.countries.size, 'countries');
+        logger.info('gameInit', `Game state initialized with ${gameState.countries.size} countries`);
 
         // 2. Create game engine
         const gameEngine = new GameEngine(gameState);
@@ -98,6 +110,9 @@ export function initializeFullGame(): void {
         // 8b. Mount React EditorOverlay component
         mountEditorOverlay(provinceMap);
 
+        // 8c. Mount React TimeControls component
+        mountTimeControls();
+
         // 9. Setup UI callbacks
         uiManager.setupUI(
             () => {
@@ -138,14 +153,18 @@ export function initializeFullGame(): void {
         );
         console.log('UI manager setup complete');
 
-        // 10. Start game loop
+        // 10. Start game loops
         gameEngine.startGameLoop(() => {
             if (provinceMap.isMapReady()) {
                 provinceMap.forceRender();
             }
             uiManager.updateDisplay();
         });
-        console.log('Game loop started');
+        logger.info('gameInit', 'Old game loop started');
+
+        // Start new core game loop
+        gameLoop.start();
+        logger.info('gameInit', '✅ New game loop started');
 
         // 11. Initial UI update
         uiManager.updateDisplay();
@@ -277,4 +296,32 @@ function mountEditorOverlay(provinceMap: ProvinceMap): void {
     root.render(React.createElement(EditorOverlay, { provinceMap }));
 
     console.log('[GameInit] EditorOverlay mounted successfully');
+}
+
+/**
+ * Mount the TimeControls React component into the game UI
+ */
+function mountTimeControls(): void {
+    logger.info('gameInit', '⏰ Mounting TimeControls...');
+
+    // Create a container for the React time controls
+    let timeControlsContainer = document.getElementById('time-controls-container');
+    if (!timeControlsContainer) {
+        timeControlsContainer = document.createElement('div');
+        timeControlsContainer.id = 'time-controls-container';
+        timeControlsContainer.style.position = 'fixed';
+        timeControlsContainer.style.top = '0';
+        timeControlsContainer.style.left = '0';
+        timeControlsContainer.style.width = '100%';
+        timeControlsContainer.style.height = '0'; // Don't block map clicks
+        timeControlsContainer.style.zIndex = '50'; // Above map, below editor overlay
+        timeControlsContainer.style.pointerEvents = 'none'; // Let clicks pass through
+        document.body.appendChild(timeControlsContainer);
+    }
+
+    // Render the TimeControls React component
+    const root = ReactDOM.createRoot(timeControlsContainer);
+    root.render(React.createElement(TimeControls));
+
+    logger.info('gameInit', '✅ TimeControls mounted successfully');
 }
