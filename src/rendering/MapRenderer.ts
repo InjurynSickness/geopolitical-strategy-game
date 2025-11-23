@@ -86,10 +86,9 @@ export class MapRenderer {
 
         // LAYER 4: Draw country borders (HOI4 STYLE - ALWAYS VISIBLE)
         // Borders are drawn at all zoom levels to distinguish countries
-        // DISABLED: Border functionality not yet implemented
-        // ctx.globalCompositeOperation = 'source-over';
-        // ctx.globalAlpha = 1.0;
-        // ctx.drawImage(this.canvasManager.borderCanvas, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1.0;
+        ctx.drawImage(this.canvasManager.borderCanvas, 0, 0);
 
         // LAYER 5: Draw rivers
         ctx.globalCompositeOperation = 'source-over';

@@ -152,11 +152,10 @@ export class ProvinceMap {
                 logger.info('ProvinceMap', '🗺️ Building political map...');
                 this.buildPoliticalMap();
 
-                // DISABLED: Border functionality not yet implemented
-                // logger.info('ProvinceMap', '🔲 Generating country borders...');
-                // logger.time('ProvinceMap', 'Border generation');
-                // this.generateCountryBorders();
-                // logger.timeEnd('ProvinceMap', 'Border generation');
+                logger.info('ProvinceMap', '🔲 Generating country borders...');
+                logger.time('ProvinceMap', 'Border generation');
+                this.generateCountryBorders();
+                logger.timeEnd('ProvinceMap', 'Border generation');
 
                 logger.info('ProvinceMap', '🎨 Drawing overlays...');
                 this.drawOverlays();
@@ -455,9 +454,8 @@ export class ProvinceMap {
 
         if (changed) {
             this.buildPoliticalMap();
-            // DISABLED: Border functionality not yet implemented
-            // this.generateCountryBorders();  // Regenerate borders when painting in editor
-            // this.buildBorderMap();
+            this.generateCountryBorders();  // Regenerate borders when painting in editor
+            this.buildBorderMap();
         }
     }
 
