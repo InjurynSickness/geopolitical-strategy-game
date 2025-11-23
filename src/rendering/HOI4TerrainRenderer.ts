@@ -238,7 +238,7 @@ export class HOI4TerrainRenderer {
 
     /**
      * Apply colormap tinting to terrain for realistic colors
-     * HOI4 uses colormaps to add color variation and depth to terrain
+     * Uses overlay blend mode for better color preservation (industry standard)
      */
     private applyColormapTinting(): void {
         const colormapCanvas = document.createElement('canvas');
@@ -250,19 +250,42 @@ export class HOI4TerrainRenderer {
 
         const terrainData = this.terrainCtx.getImageData(0, 0, this.mapWidth, this.mapHeight);
 
-        // Apply colormap as a multiply blend
+        // Apply colormap using OVERLAY blend mode (better than multiply)
+        // Overlay preserves both highlights and shadows while adding color
         for (let i = 0; i < terrainData.data.length; i += 4) {
             // Skip transparent pixels (water)
             if (terrainData.data[i + 3] === 0) continue;
 
-            // Multiply blend: (terrain * colormap) / 255
-            terrainData.data[i] = (terrainData.data[i] * colormapData.data[i]) / 255;         // R
-            terrainData.data[i + 1] = (terrainData.data[i + 1] * colormapData.data[i + 1]) / 255; // G
-            terrainData.data[i + 2] = (terrainData.data[i + 2] * colormapData.data[i + 2]) / 255; // B
+            // Overlay blend for each channel
+            // If base < 0.5: 2 * base * blend
+            // If base >= 0.5: 1 - 2 * (1 - base) * (1 - blend)
+            for (let c = 0; c < 3; c++) {
+                const base = terrainData.data[i + c] / 255;
+                const blend = colormapData.data[i + c] / 255;
+
+                let result;
+                if (base < 0.5) {
+                    result = 2 * base * blend;
+                } else {
+                    result = 1 - 2 * (1 - base) * (1 - blend);
+                }
+
+                terrainData.data[i + c] = Math.floor(result * 255);
+            }
+        }
+
+        // Apply brightness compensation to prevent darkening
+        // Boost overall brightness by 15% to compensate for blend darkening
+        for (let i = 0; i < terrainData.data.length; i += 4) {
+            if (terrainData.data[i + 3] === 0) continue; // Skip transparent
+
+            terrainData.data[i] = Math.min(255, terrainData.data[i] * 1.15);     // R
+            terrainData.data[i + 1] = Math.min(255, terrainData.data[i + 1] * 1.15); // G
+            terrainData.data[i + 2] = Math.min(255, terrainData.data[i + 2] * 1.15); // B
         }
 
         this.terrainCtx.putImageData(terrainData, 0, 0);
-        logger.info('HOI4TerrainRenderer', 'Colormap tinting applied');
+        logger.info('HOI4TerrainRenderer', 'Colormap tinting applied (overlay blend + brightness compensation)');
     }
 
     public getTerrainCanvas(): HTMLCanvasElement {

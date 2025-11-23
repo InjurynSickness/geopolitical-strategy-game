@@ -234,8 +234,24 @@ export class ProvinceMap {
         this.waterTextureImage.onload = () => {
             logger.info('ProvinceMap', '🎨 Drawing water texture to canvas...');
             try {
+                // Draw the water colormap
                 this.canvasManager.waterTextureCtx.drawImage(this.waterTextureImage, 0, 0, MAP_WIDTH, MAP_HEIGHT);
-                logger.info('ProvinceMap', '✅ Water texture drawn');
+
+                // BRIGHTEN the water colormap (original is too dark for game maps)
+                // Industry standard: water should be visible but not overwhelming
+                const waterData = this.canvasManager.waterTextureCtx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+                for (let i = 0; i < waterData.data.length; i += 4) {
+                    // Brighten by 2.5x and add blue tint for clearer water
+                    // This prevents the dark shadow effect
+                    waterData.data[i] = Math.min(255, waterData.data[i] * 2.5 + 30);       // R
+                    waterData.data[i + 1] = Math.min(255, waterData.data[i + 1] * 2.5 + 40); // G
+                    waterData.data[i + 2] = Math.min(255, waterData.data[i + 2] * 2.5 + 60); // B (more blue)
+                    // Alpha stays the same
+                }
+
+                this.canvasManager.waterTextureCtx.putImageData(waterData, 0, 0);
+                logger.info('ProvinceMap', '✅ Water texture drawn and brightened (2.5x + blue tint)');
             } catch (error) {
                 logger.error('ProvinceMap', 'ERROR drawing water texture', error);
             }
