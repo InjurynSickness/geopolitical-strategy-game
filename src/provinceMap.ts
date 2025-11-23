@@ -152,12 +152,13 @@ export class ProvinceMap {
                 logger.info('ProvinceMap', '🗺️ Building political map...');
                 this.buildPoliticalMap();
 
-                logger.info('ProvinceMap', '🔲 Generating country borders...');
-                logger.time('ProvinceMap', 'Border generation');
-                this.generateCountryBorders();
-                logger.timeEnd('ProvinceMap', 'Border generation');
+                // DISABLED: Border functionality not yet implemented
+                // logger.info('ProvinceMap', '🔲 Generating country borders...');
+                // logger.time('ProvinceMap', 'Border generation');
+                // this.generateCountryBorders();
+                // logger.timeEnd('ProvinceMap', 'Border generation');
 
-                logger.info('ProvinceMap', '🎨 Drawing borders and overlays...');
+                logger.info('ProvinceMap', '🎨 Drawing overlays...');
                 this.drawOverlays();
 
                 logger.info('ProvinceMap', '🖼️ Rendering map for first time...');
@@ -266,18 +267,11 @@ export class ProvinceMap {
             logger.info('ProvinceMap', '✅ Terrain atlas rendering complete (water already masked)');
 
         } else {
-            // Fallback to old tiled pattern approach
-            logger.warn('ProvinceMap', '⚠️ Terrain atlas not ready, using fallback tiled terrain');
+            // Use terrain.png directly at full size (not tiled)
+            logger.info('ProvinceMap', '🗻 Using terrain.png at full size...');
 
-            const pattern = ctx.createPattern(this.terrainImage, 'repeat');
-            if (!pattern) {
-                logger.error('ProvinceMap', '❌ Failed to create terrain pattern');
-                logger.showDebugPanel();
-                return;
-            }
-
-            ctx.fillStyle = pattern;
-            ctx.fillRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            // Draw terrain image at full size
+            ctx.drawImage(this.terrainImage, 0, 0, MAP_WIDTH, MAP_HEIGHT);
 
             const terrainImageData = ctx.getImageData(0, 0, MAP_WIDTH, MAP_HEIGHT);
             const terrainData = terrainImageData.data;
@@ -411,8 +405,9 @@ export class ProvinceMap {
 
         if (changed) {
             this.buildPoliticalMap();
-            this.generateCountryBorders();  // Regenerate borders when painting in editor
-            this.buildBorderMap();
+            // DISABLED: Border functionality not yet implemented
+            // this.generateCountryBorders();  // Regenerate borders when painting in editor
+            // this.buildBorderMap();
         }
     }
 
