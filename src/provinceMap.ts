@@ -17,7 +17,6 @@ import { CountryEditor } from './editor/CountryEditor.js';
 import { ProvinceSelector } from './editor/ProvinceSelector.js';
 import { BorderGenerator } from './rendering/BorderGenerator.js';
 import { TerrainAtlasRenderer } from './rendering/TerrainAtlasRenderer.js';
-import { BorderRenderer } from './rendering/BorderRenderer.js';
 import { logger } from './utils/Logger.js';
 
 const MAP_WIDTH = 5632;  // HOI4 map dimensions
@@ -50,9 +49,6 @@ export class ProvinceMap {
 
     // Terrain atlas renderer - uses actual HOI4 terrain textures
     private terrainAtlasRenderer: TerrainAtlasRenderer | null = null;
-
-    // Border renderer - uses actual HOI4 border textures
-    private borderRenderer: BorderRenderer | null = null;
 
     private selectedProvinceId: string | null = null;
     private mapReady = false;
@@ -261,20 +257,9 @@ export class ProvinceMap {
             onAssetLoad('Terrain Atlas System');
         });
 
-        // Initialize border renderer - uses actual HOI4 border textures
-        logger.info('ProvinceMap', '🗺️ Initializing border renderer with HOI4 border textures...');
-        this.borderRenderer = new BorderRenderer(
-            MAP_WIDTH,
-            MAP_HEIGHT,
-            this.canvasManager.borderCtx,
-            () => onAssetLoad('Border System')
-        );
-        this.borderRenderer.load().catch((error) => {
-            logger.error('ProvinceMap', '❌ Border textures failed to load', error);
-            logger.showDebugPanel();
-            // Mark as loaded anyway so we don't block
-            onAssetLoad('Border System');
-        });
+        // Borders will be generated programmatically after political map is built
+        // No need to load border textures - using BorderGenerator instead
+        onAssetLoad('Border System');
     }
 
     private processTerrainImage(): void {
@@ -478,14 +463,6 @@ export class ProvinceMap {
     private drawOverlays(): void {
         this.canvasManager.overlayCtx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
 
-        // Draw static black country borders (always visible)
-        if (this.countryBordersReady && this.countryBorders.length > 0) {
-            this.canvasManager.overlayCtx.fillStyle = '#000000';  // Static black
-            for (const [x, y] of this.countryBorders) {
-                this.canvasManager.overlayCtx.fillRect(x, y, 1, 1);
-            }
-        }
-
         // Draw flickering orange province selection (visible in all modes)
         if (this.selectedProvinceId) {
             // Get or generate border pixels for selected province
@@ -533,6 +510,28 @@ export class ProvinceMap {
         // Use BorderGenerator to generate borders
         this.countryBorders = BorderGenerator.generateCountryBorders(imageData, MAP_WIDTH, MAP_HEIGHT);
         this.countryBordersReady = true;
+
+        // Draw borders to border canvas
+        this.drawCountryBorders();
+    }
+
+    // Draw country borders to border canvas (HOI4 style)
+    // Borders are always visible and drawn in black
+    private drawCountryBorders(): void {
+        if (!this.countryBordersReady || this.countryBorders.length === 0) {
+            return;
+        }
+
+        // Clear border canvas
+        this.canvasManager.borderCtx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+
+        // Draw static black country borders
+        this.canvasManager.borderCtx.fillStyle = '#000000';
+        for (const [x, y] of this.countryBorders) {
+            this.canvasManager.borderCtx.fillRect(x, y, 1, 1);
+        }
+
+        logger.info('ProvinceMap', `✓ Country borders drawn: ${this.countryBorders.length} pixels`);
     }
 
     // Throttled render using requestAnimationFrame to prevent lag

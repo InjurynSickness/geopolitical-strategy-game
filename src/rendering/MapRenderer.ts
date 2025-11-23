@@ -12,6 +12,36 @@ export class MapRenderer {
         private cameraController: CameraController
     ) {}
 
+    /**
+     * Calculate political color opacity based on zoom level (HOI4 style)
+     * - Zoomed in (high zoom): 0% opacity (only borders visible, terrain primary)
+     * - Zoomed out (low zoom): High opacity (political overview)
+     */
+    private calculatePoliticalOpacity(): number {
+        const camera = this.cameraController.camera;
+        const zoom = camera.zoom;
+        const minZoom = camera.minZoom;
+        const maxZoom = camera.maxZoom;
+
+        // Define zoom thresholds for political color visibility
+        // At max zoom (zoomed in): completely transparent (0.0)
+        // At min zoom (zoomed out): highly visible (0.7)
+        const zoomFadeStart = minZoom * 3; // Start fading in political colors
+        const zoomFadeEnd = minZoom * 1.2;   // Fully visible political colors
+
+        if (zoom >= zoomFadeStart) {
+            // Zoomed in: no political colors, only terrain + borders
+            return 0.0;
+        } else if (zoom <= zoomFadeEnd) {
+            // Zoomed out: full political color overlay
+            return 0.7;
+        } else {
+            // Interpolate between zoomed in and zoomed out
+            const t = (zoom - zoomFadeEnd) / (zoomFadeStart - zoomFadeEnd);
+            return 0.7 * (1 - t); // Fade from 0.7 to 0.0
+        }
+    }
+
     public render(): void {
         const ctx = this.canvasManager.visibleCtx;
         const camera = this.cameraController.camera;
@@ -36,7 +66,7 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.waterTextureCanvas, 0, 0);
 
-        // LAYER 2: Draw terrain texture (primary visual element like in HOI4)
+        // LAYER 2: Draw terrain texture (PRIMARY VISUAL - always 100% visible like HOI4)
         // Water areas are transparent on this layer, so water texture shows through
         // Shows geographical features like mountains, forests, plains
         if (!this.terrainDebugLogged) {
@@ -59,20 +89,23 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
 
-        // LAYER 3: Draw political colors as overlay (HOI4 style)
-        // Using soft-light blend for subtle color tinting without darkening
-        ctx.globalCompositeOperation = 'soft-light';
-        ctx.globalAlpha = 0.45;  // Subtle political color overlay
-        ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
-        ctx.globalAlpha = 1.0;
-        ctx.globalCompositeOperation = 'source-over';  // Reset blend mode
+        // LAYER 3: Draw political colors (HOI4 ZOOM-BASED RENDERING)
+        // Zoomed in: 0% opacity (invisible, only borders visible)
+        // Zoomed out: 70% opacity (political overview)
+        const politicalOpacity = this.calculatePoliticalOpacity();
+        if (politicalOpacity > 0) {
+            ctx.globalCompositeOperation = 'multiply';
+            ctx.globalAlpha = politicalOpacity;
+            ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
+            ctx.globalAlpha = 1.0;
+            ctx.globalCompositeOperation = 'source-over';
+        }
 
-        // LAYER 4: Draw borders (country borders from border textures)
-        // DISABLED: Border texture contains incorrect data (horizontal lines)
-        // TODO: Generate proper borders or use correct border texture
-        // ctx.globalCompositeOperation = 'source-over';
-        // ctx.globalAlpha = 1.0;
-        // ctx.drawImage(this.canvasManager.borderCanvas, 0, 0);
+        // LAYER 4: Draw country borders (HOI4 STYLE - ALWAYS VISIBLE)
+        // Borders are drawn at all zoom levels to distinguish countries
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1.0;
+        ctx.drawImage(this.canvasManager.borderCanvas, 0, 0);
 
         // LAYER 5: Draw rivers
         ctx.globalCompositeOperation = 'source-over';
