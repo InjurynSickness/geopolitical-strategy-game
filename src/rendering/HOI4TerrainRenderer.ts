@@ -131,9 +131,16 @@ export class HOI4TerrainRenderer {
                     // Get atlas tile coordinates for this terrain type
                     const tileCoords = getAtlasTileCoords(terrainType.atlasIndex);
 
-                    // Sample from atlas with tiling (wrap coordinates within tile)
-                    const tileLocalX = x % this.TILE_SIZE;
-                    const tileLocalY = y % this.TILE_SIZE;
+                    // Add variation to prevent obvious tiling pattern
+                    // Use both map coordinates AND terrain RGB as seed for variation
+                    // This creates natural-looking variation while keeping it deterministic
+                    const variationSeed = (x * 73 + y * 151 + r + g + b) % 512;
+                    const offsetX = (variationSeed * 7) % this.TILE_SIZE;
+                    const offsetY = (variationSeed * 13) % this.TILE_SIZE;
+
+                    // Sample from atlas with variation offset to break up tiling
+                    const tileLocalX = (x + offsetX) % this.TILE_SIZE;
+                    const tileLocalY = (y + offsetY) % this.TILE_SIZE;
 
                     const atlasSampleX = tileCoords.x + tileLocalX;
                     const atlasSampleY = tileCoords.y + tileLocalY;

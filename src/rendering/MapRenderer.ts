@@ -51,7 +51,7 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.waterTextureCanvas, 0, 0);
 
-        // LAYER 2: Draw terrain texture (PRIMARY VISUAL - always 100% visible like HOI4)
+        // LAYER 2: Draw terrain texture (SUBTLE BACKGROUND - reduced opacity to prevent visual noise)
         // Water areas are transparent on this layer, so water texture shows through
         // Shows geographical features like mountains, forests, plains
         if (!this.terrainDebugLogged) {
@@ -71,8 +71,9 @@ export class MapRenderer {
         }
 
         ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = 1.0;
+        ctx.globalAlpha = 0.35; // Reduced to 35% to prevent overwhelming tiling patterns
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
+        ctx.globalAlpha = 1.0;
 
         // LAYER 3: Draw political colors (TOGGLEABLE OVERLAY)
         // Controlled by UI toggle button - terrain is always visible beneath
