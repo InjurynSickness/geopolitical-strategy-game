@@ -12,7 +12,7 @@
  */
 
 import { logger } from '../utils/Logger.js';
-import { getTerrainByIndex, getAtlasTileCoords } from '../config/terrainTypes.js';
+import { getTerrainByIndex, getAtlasTileCoords, TERRAIN_TYPES } from '../config/terrainTypes.js';
 
 export class HOI4TerrainRenderer {
     private terrainIndexedImage = new Image();
@@ -88,75 +88,86 @@ export class HOI4TerrainRenderer {
      * - Build final terrain texture
      */
     private async generateTerrainFromAtlas(): Promise<void> {
-        const startTime = performance.now();
+        try {
+            const startTime = performance.now();
 
-        // Create temp canvas to read terrain indices
-        const terrainIndexCanvas = document.createElement('canvas');
-        terrainIndexCanvas.width = this.mapWidth;
-        terrainIndexCanvas.height = this.mapHeight;
-        const terrainIndexCtx = terrainIndexCanvas.getContext('2d', { willReadFrequently: true })!;
-        terrainIndexCtx.drawImage(this.terrainIndexedImage, 0, 0, this.mapWidth, this.mapHeight);
-        const terrainIndexData = terrainIndexCtx.getImageData(0, 0, this.mapWidth, this.mapHeight);
+            // Create temp canvas to read terrain indices
+            const terrainIndexCanvas = document.createElement('canvas');
+            terrainIndexCanvas.width = this.mapWidth;
+            terrainIndexCanvas.height = this.mapHeight;
+            const terrainIndexCtx = terrainIndexCanvas.getContext('2d', { willReadFrequently: true })!;
+            terrainIndexCtx.drawImage(this.terrainIndexedImage, 0, 0, this.mapWidth, this.mapHeight);
+            const terrainIndexData = terrainIndexCtx.getImageData(0, 0, this.mapWidth, this.mapHeight);
 
-        // Create temp canvas to read atlas pixels
-        const atlasCanvas = document.createElement('canvas');
-        atlasCanvas.width = this.atlasImage.width;
-        atlasCanvas.height = this.atlasImage.height;
-        const atlasCtx = atlasCanvas.getContext('2d', { willReadFrequently: true })!;
-        atlasCtx.drawImage(this.atlasImage, 0, 0);
-        const atlasData = atlasCtx.getImageData(0, 0, this.atlasImage.width, this.atlasImage.height);
+            // Create temp canvas to read atlas pixels
+            const atlasCanvas = document.createElement('canvas');
+            atlasCanvas.width = this.atlasImage.width;
+            atlasCanvas.height = this.atlasImage.height;
+            const atlasCtx = atlasCanvas.getContext('2d', { willReadFrequently: true })!;
+            atlasCtx.drawImage(this.atlasImage, 0, 0);
+            const atlasData = atlasCtx.getImageData(0, 0, this.atlasImage.width, this.atlasImage.height);
 
-        // Create output terrain texture
-        const terrainData = this.terrainCtx.createImageData(this.mapWidth, this.mapHeight);
+            // Create output terrain texture
+            const terrainData = this.terrainCtx.createImageData(this.mapWidth, this.mapHeight);
 
-        let pixelsProcessed = 0;
-        const totalPixels = this.mapWidth * this.mapHeight;
+            let pixelsProcessed = 0;
+            const totalPixels = this.mapWidth * this.mapHeight;
+            const CHUNK_SIZE = 100; // Process 100 rows at a time, then yield
 
-        // Process each pixel in the terrain map
-        for (let y = 0; y < this.mapHeight; y++) {
-            for (let x = 0; x < this.mapWidth; x++) {
-                const pixelIdx = (y * this.mapWidth + x) * 4;
+            // Process each pixel in the terrain map
+            for (let y = 0; y < this.mapHeight; y++) {
+                for (let x = 0; x < this.mapWidth; x++) {
+                    const pixelIdx = (y * this.mapWidth + x) * 4;
 
-                // Read the terrain index from the indexed terrain image
-                // Since PNG may have converted indexed to RGB, we need to map RGB back to palette index
-                const r = terrainIndexData.data[pixelIdx];
-                const g = terrainIndexData.data[pixelIdx + 1];
-                const b = terrainIndexData.data[pixelIdx + 2];
+                    // Read the terrain index from the indexed terrain image
+                    // Since PNG may have converted indexed to RGB, we need to map RGB back to palette index
+                    const r = terrainIndexData.data[pixelIdx];
+                    const g = terrainIndexData.data[pixelIdx + 1];
+                    const b = terrainIndexData.data[pixelIdx + 2];
 
-                // Get terrain type for this color
-                const terrainType = this.getTerrainTypeByRGB(r, g, b);
+                    // Get terrain type for this color
+                    const terrainType = this.getTerrainTypeByRGB(r, g, b);
 
-                // Get atlas tile coordinates for this terrain type
-                const tileCoords = getAtlasTileCoords(terrainType.atlasIndex);
+                    // Get atlas tile coordinates for this terrain type
+                    const tileCoords = getAtlasTileCoords(terrainType.atlasIndex);
 
-                // Sample from atlas with tiling (wrap coordinates within tile)
-                const tileLocalX = x % this.TILE_SIZE;
-                const tileLocalY = y % this.TILE_SIZE;
+                    // Sample from atlas with tiling (wrap coordinates within tile)
+                    const tileLocalX = x % this.TILE_SIZE;
+                    const tileLocalY = y % this.TILE_SIZE;
 
-                const atlasSampleX = tileCoords.x + tileLocalX;
-                const atlasSampleY = tileCoords.y + tileLocalY;
-                const atlasSampleIdx = (atlasSampleY * this.atlasImage.width + atlasSampleX) * 4;
+                    const atlasSampleX = tileCoords.x + tileLocalX;
+                    const atlasSampleY = tileCoords.y + tileLocalY;
+                    const atlasSampleIdx = (atlasSampleY * this.atlasImage.width + atlasSampleX) * 4;
 
-                // Copy pixel from atlas to terrain
-                terrainData.data[pixelIdx] = atlasData.data[atlasSampleIdx];         // R
-                terrainData.data[pixelIdx + 1] = atlasData.data[atlasSampleIdx + 1]; // G
-                terrainData.data[pixelIdx + 2] = atlasData.data[atlasSampleIdx + 2]; // B
-                terrainData.data[pixelIdx + 3] = 255; // Full opacity (water mask applied later)
+                    // Copy pixel from atlas to terrain
+                    terrainData.data[pixelIdx] = atlasData.data[atlasSampleIdx];         // R
+                    terrainData.data[pixelIdx + 1] = atlasData.data[atlasSampleIdx + 1]; // G
+                    terrainData.data[pixelIdx + 2] = atlasData.data[atlasSampleIdx + 2]; // B
+                    terrainData.data[pixelIdx + 3] = 255; // Full opacity (water mask applied later)
 
-                pixelsProcessed++;
+                    pixelsProcessed++;
+                }
+
+                // Log progress every 10%
+                if (y % Math.floor(this.mapHeight / 10) === 0) {
+                    const progress = Math.floor((pixelsProcessed / totalPixels) * 100);
+                    logger.info('HOI4TerrainRenderer', `Progress: ${progress}%`);
+                }
+
+                // Yield to browser every CHUNK_SIZE rows to prevent blocking
+                if (y % CHUNK_SIZE === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
             }
 
-            // Log progress every 10%
-            if (y % Math.floor(this.mapHeight / 10) === 0) {
-                const progress = Math.floor((pixelsProcessed / totalPixels) * 100);
-                logger.info('HOI4TerrainRenderer', `Progress: ${progress}%`);
-            }
+            this.terrainCtx.putImageData(terrainData, 0, 0);
+
+            const elapsed = performance.now() - startTime;
+            logger.info('HOI4TerrainRenderer', `Terrain generated in ${elapsed.toFixed(0)}ms`);
+        } catch (error) {
+            logger.error('HOI4TerrainRenderer', 'Failed to generate terrain from atlas', error);
+            throw error;
         }
-
-        this.terrainCtx.putImageData(terrainData, 0, 0);
-
-        const elapsed = performance.now() - startTime;
-        logger.info('HOI4TerrainRenderer', `Terrain generated in ${elapsed.toFixed(0)}ms`);
     }
 
     /**
@@ -164,11 +175,7 @@ export class HOI4TerrainRenderer {
      * (PNG conversion may have converted indexed colors to RGB)
      */
     private getTerrainTypeByRGB(r: number, g: number, b: number) {
-        // Try to find exact match first
-        const terrain = getTerrainByIndex(0); // Will be overridden
-
-        // Check all terrain types for RGB match
-        const { TERRAIN_TYPES } = require('../config/terrainTypes.js');
+        // Check all terrain types for RGB match (exact match first)
         for (const t of TERRAIN_TYPES) {
             if (t.color.r === r && t.color.g === g && t.color.b === b) {
                 return t;
