@@ -188,13 +188,13 @@ export class ProvinceMap {
             }
         };
 
-        logger.info('ProvinceMap', '📥 Loading terrain atlas...');
-        this.terrainImage.onload = () => onAssetLoad('terrain_atlas0.png');
+        logger.info('ProvinceMap', '📥 Loading terrain.png...');
+        this.terrainImage.onload = () => onAssetLoad('terrain.png');
         this.terrainImage.onerror = (e) => {
-            logger.error('ProvinceMap', '❌ FAILED to load terrain_atlas0.png', { path: './terrain_atlas0.png', error: e });
+            logger.error('ProvinceMap', '❌ FAILED to load terrain.png', { path: './terrain.png', error: e });
             logger.showDebugPanel(); // Auto-show debug panel on error
         };
-        this.terrainImage.src = './terrain_atlas0.png';
+        this.terrainImage.src = './terrain.png';
 
         logger.info('ProvinceMap', '📥 Loading provinces.png...');
         this.provinceImage.onload = () => onAssetLoad('provinces.png');
@@ -242,20 +242,11 @@ export class ProvinceMap {
         };
         this.waterTextureImage.src = './colormap_water_0.png';
 
-        // Initialize terrain atlas renderer - uses actual HOI4 terrain textures
-        logger.info('ProvinceMap', '🗻 Initializing terrain atlas renderer with HOI4 textures...');
-        this.terrainAtlasRenderer = new TerrainAtlasRenderer(
-            MAP_WIDTH,
-            MAP_HEIGHT,
-            () => onAssetLoad('Terrain Atlas System'),
-            this.canvasManager.hiddenCtx  // Pass water mask context
-        );
-        this.terrainAtlasRenderer.load().catch((error) => {
-            logger.error('ProvinceMap', '❌ Terrain atlas failed to load', error);
-            logger.showDebugPanel();
-            // Mark as loaded anyway so we don't block
-            onAssetLoad('Terrain Atlas System');
-        });
+        // Skip terrain atlas renderer - use simpler tiled terrain.png for better appearance
+        // The atlas approach creates blocky 64x64 tiles that don't look good
+        logger.info('ProvinceMap', '🗻 Using tiled terrain.png for smooth terrain texture...');
+        this.terrainAtlasRenderer = null;
+        onAssetLoad('Terrain Atlas System');
 
         // Borders will be generated programmatically after political map is built
         // No need to load border textures - using BorderGenerator instead
