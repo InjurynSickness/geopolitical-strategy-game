@@ -56,8 +56,10 @@ export class HOI4TerrainRenderer {
         logger.info('HOI4TerrainRenderer', '🌊 Applying water mask...');
         this.applyWaterMask();
 
-        logger.info('HOI4TerrainRenderer', '🎨 Applying colormap tinting...');
-        this.applyColormapTinting();
+        // TEMP: Disable colormap tinting to test if it's causing issues
+        // logger.info('HOI4TerrainRenderer', '🎨 Applying colormap tinting...');
+        // this.applyColormapTinting();
+        logger.info('HOI4TerrainRenderer', '⏭️ Skipping colormap tinting (testing raw atlas textures)');
 
         this.ready = true;
         this.onReady();

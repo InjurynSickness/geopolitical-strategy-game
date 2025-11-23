@@ -125,7 +125,7 @@ export class ProvinceMap {
         logger.time('ProvinceMap', 'Total asset loading');
         logger.info('ProvinceMap', '🚀 Starting asset loading...');
         let assetsLoaded = 0;
-        const totalAssets = 5; // terrain (enhanced), provinces, rivers, water texture, enhanced terrain system
+        const totalAssets = 4; // provinces, rivers, water texture, HOI4 terrain atlas system
         const loadedAssets: string[] = [];
 
         const onAssetLoad = (assetName: string) => {
@@ -189,8 +189,12 @@ export class ProvinceMap {
             }
         };
 
-        logger.info('ProvinceMap', '📥 Loading terrain.png...');
-        this.terrainImage.onload = () => onAssetLoad('terrain.png');
+        // Load terrain.png as fallback only (not counted in asset loading)
+        // The HOI4TerrainRenderer will provide the primary terrain textures
+        logger.info('ProvinceMap', '📥 Loading terrain.png (fallback)...');
+        this.terrainImage.onload = () => {
+            logger.info('ProvinceMap', '✓ Fallback terrain.png loaded');
+        };
         this.terrainImage.onerror = (e) => {
             logger.error('ProvinceMap', '❌ FAILED to load terrain.png', { path: './terrain.png', error: e });
             logger.showDebugPanel(); // Auto-show debug panel on error
@@ -270,12 +274,23 @@ export class ProvinceMap {
         if (this.hoi4TerrainRenderer && this.hoi4TerrainRenderer.isReady()) {
             logger.info('ProvinceMap', '🗻 Using HOI4 terrain atlas textures...');
 
+            const terrainCanvas = this.hoi4TerrainRenderer.getTerrainCanvas();
+            logger.info('ProvinceMap', `📊 Terrain canvas size: ${terrainCanvas.width}x${terrainCanvas.height}`);
+
             // Draw the terrain atlas (water is already masked as transparent, colormap tinting applied)
-            ctx.drawImage(this.hoi4TerrainRenderer.getTerrainCanvas(), 0, 0);
+            ctx.drawImage(terrainCanvas, 0, 0);
+
+            // Debug: Check if terrain data was actually drawn
+            const checkData = ctx.getImageData(1000, 1000, 1, 1).data;
+            logger.info('ProvinceMap', `🔍 Sample terrain pixel at (1000,1000): R=${checkData[0]}, G=${checkData[1]}, B=${checkData[2]}, A=${checkData[3]}`);
 
             logger.info('ProvinceMap', '✅ HOI4 terrain atlas rendering complete (water masked, colormap tinted)');
 
         } else {
+            logger.warn('ProvinceMap', '⚠️ HOI4 terrain renderer NOT ready, using fallback terrain.png', {
+                hasRenderer: !!this.hoi4TerrainRenderer,
+                isReady: this.hoi4TerrainRenderer?.isReady()
+            });
             // Use terrain.png directly at full size (not tiled)
             logger.info('ProvinceMap', '🗻 Using terrain.png at full size...');
 

@@ -84,7 +84,12 @@ export function InteractiveCountrySelection({ onBack, onSelectCountry, onMapRead
 
             provinceMapInstance.updateCountries(tempGameState.countries, countryData);
             provinceMapInstance.setProvinceOwnerMap(provinceToCountryMap);
+
+            // Enable political colors overlay for country selection (0.4 = 40% opacity over terrain)
+            provinceMapInstance.setPoliticalOpacity(0.4);
+
             logger.info('InteractiveCountrySelection', '✅ Map updated with countries and provinces');
+            logger.info('InteractiveCountrySelection', 'Political colors enabled at 40% opacity over terrain');
             logger.info('InteractiveCountrySelection', 'Now waiting for ProvinceMap to finish loading assets...');
           })
           .catch((error) => {
