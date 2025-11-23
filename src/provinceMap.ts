@@ -16,7 +16,7 @@ import { BorderMapBuilder } from './borders/BorderMapBuilder.js';
 import { CountryEditor } from './editor/CountryEditor.js';
 import { ProvinceSelector } from './editor/ProvinceSelector.js';
 import { BorderGenerator } from './rendering/BorderGenerator.js';
-import { TerrainAtlasRenderer } from './rendering/TerrainAtlasRenderer.js';
+import { HOI4TerrainRenderer } from './rendering/HOI4TerrainRenderer.js';
 import { logger } from './utils/Logger.js';
 
 const MAP_WIDTH = 5632;  // HOI4 map dimensions
@@ -47,8 +47,8 @@ export class ProvinceMap {
     private riversImage = new Image();
     private waterTextureImage = new Image();
 
-    // Terrain atlas renderer - uses actual HOI4 terrain textures
-    private terrainAtlasRenderer: TerrainAtlasRenderer | null = null;
+    // HOI4 Terrain renderer - uses actual HOI4 terrain atlas textures
+    private hoi4TerrainRenderer: HOI4TerrainRenderer | null = null;
 
     private selectedProvinceId: string | null = null;
     private mapReady = false;
@@ -238,16 +238,25 @@ export class ProvinceMap {
             onAssetLoad('colormap_water_0.png');
         };
         this.waterTextureImage.onerror = (e) => {
-            logger.error('ProvinceMap', '❌ FAILED to load colormap_water_0.png', { path: './colormap_water_0.png', error: e });
+            logger.error('ProvinceMap', '❌ FAILED to load colormap_water.png', { path: './colormap_water.png', error: e });
             logger.showDebugPanel();
         };
-        this.waterTextureImage.src = './colormap_water_0.png';
+        this.waterTextureImage.src = './colormap_water.png';
 
-        // Skip terrain atlas renderer - use simpler tiled terrain.png for better appearance
-        // The atlas approach creates blocky 64x64 tiles that don't look good
-        logger.info('ProvinceMap', '🗻 Using tiled terrain.png for smooth terrain texture...');
-        this.terrainAtlasRenderer = null;
-        onAssetLoad('Terrain Atlas System');
+        // Initialize HOI4 terrain renderer with actual atlas textures
+        logger.info('ProvinceMap', '🗻 Initializing HOI4 terrain atlas renderer...');
+        this.hoi4TerrainRenderer = new HOI4TerrainRenderer(
+            MAP_WIDTH,
+            MAP_HEIGHT,
+            () => {
+                logger.info('ProvinceMap', '✅ HOI4 terrain renderer ready');
+                onAssetLoad('HOI4 Terrain Atlas System');
+            }
+        );
+        this.hoi4TerrainRenderer.load().catch((error) => {
+            logger.error('ProvinceMap', '❌ FAILED to load HOI4 terrain renderer', error);
+            logger.showDebugPanel();
+        });
 
         // Borders will be generated programmatically after political map is built
         // No need to load border textures - using BorderGenerator instead
@@ -257,14 +266,14 @@ export class ProvinceMap {
     private processTerrainImage(): void {
         const ctx = this.canvasManager.processedTerrainCtx;
 
-        // Use terrain atlas renderer if available (with actual HOI4 terrain textures)
-        if (this.terrainAtlasRenderer && this.terrainAtlasRenderer.isReady()) {
+        // Use HOI4 terrain renderer if available (with actual HOI4 terrain atlas textures)
+        if (this.hoi4TerrainRenderer && this.hoi4TerrainRenderer.isReady()) {
             logger.info('ProvinceMap', '🗻 Using HOI4 terrain atlas textures...');
 
-            // Draw the terrain atlas (water is already masked as transparent)
-            ctx.drawImage(this.terrainAtlasRenderer.getTerrainCanvas(), 0, 0);
+            // Draw the terrain atlas (water is already masked as transparent, colormap tinting applied)
+            ctx.drawImage(this.hoi4TerrainRenderer.getTerrainCanvas(), 0, 0);
 
-            logger.info('ProvinceMap', '✅ Terrain atlas rendering complete (water already masked)');
+            logger.info('ProvinceMap', '✅ HOI4 terrain atlas rendering complete (water masked, colormap tinted)');
 
         } else {
             // Use terrain.png directly at full size (not tiled)
