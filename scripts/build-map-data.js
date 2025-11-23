@@ -14,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
 
-const CSV_FILE_PATH = path.join(projectRoot, 'definition.csv');
+const CSV_FILE_PATH = path.join(projectRoot, 'map-data/definition.csv');
 const NAMES_FILE_PATH = path.join(projectRoot, 'province names.txt');
 const PNG_FILE_PATH = path.join(projectRoot, 'provinces.png');
 const DATA_OUTPUT_PATH = path.join(projectRoot, 'src', 'provinceData.ts');

@@ -582,7 +582,7 @@ export class ProvinceMap {
         this.render();
     }
 
-    public async importAndAutoAssignCSV(csvPath: string = './definition.csv'): Promise<void> {
+    public async importAndAutoAssignCSV(csvPath: string = './map-data/definition.csv'): Promise<void> {
         try {
             const result = await this.mapEditor.importAndAutoAssignCSV(csvPath);
             this.buildPoliticalMap();
@@ -700,6 +700,31 @@ export class ProvinceMap {
 
     public forceRender(): void {
         this.render();
+    }
+
+    /**
+     * Toggle political colors overlay (0 = terrain only, 1 = full political colors)
+     */
+    public togglePoliticalColors(): void {
+        const currentOpacity = this.mapRenderer.getPoliticalOpacity();
+        // Toggle between 0 (terrain only) and 0.6 (political overlay)
+        this.mapRenderer.setPoliticalOpacity(currentOpacity > 0 ? 0.0 : 0.6);
+        this.requestRender();
+    }
+
+    /**
+     * Set political colors opacity (0 = terrain only, 1 = full political colors)
+     */
+    public setPoliticalOpacity(opacity: number): void {
+        this.mapRenderer.setPoliticalOpacity(opacity);
+        this.requestRender();
+    }
+
+    /**
+     * Get current political colors opacity
+     */
+    public getPoliticalOpacity(): number {
+        return this.mapRenderer.getPoliticalOpacity();
     }
 
     public async calculateLabels(): Promise<void> {

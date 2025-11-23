@@ -99,7 +99,7 @@ export class MapEditor {
         return false;
     }
 
-    public async importAndAutoAssignCSV(csvPath: string = './definition.csv'): Promise<{ assigned: number; unassigned: number; unassignedList: string[] }> {
+    public async importAndAutoAssignCSV(csvPath: string = './map-data/definition.csv'): Promise<{ assigned: number; unassigned: number; unassignedList: string[] }> {
         try {
             const response = await fetch(csvPath);
             if (!response.ok) throw new Error(`Failed to load ${csvPath}`);

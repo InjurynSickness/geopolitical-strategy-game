@@ -18,7 +18,8 @@ export class UIManager {
         onSetSpeed: (speed: number) => void,
         onToggleEditor: () => void,
         onMainMenu: () => void,
-        onSelectProvince: (provinceId: string) => void
+        onSelectProvince: (provinceId: string) => void,
+        onTogglePolitical?: () => void
     ): void {
         const playBtn = document.getElementById('playBtn');
         if (!playBtn) {
@@ -34,7 +35,7 @@ export class UIManager {
                 speedBtn.addEventListener('click', () => onSetSpeed(i));
             }
         }
-        
+
         const toggleEditorBtn = document.getElementById('toggleEditorBtn');
         if (toggleEditorBtn) {
             toggleEditorBtn.addEventListener('click', onToggleEditor);
@@ -44,9 +45,14 @@ export class UIManager {
         if (mainMenuBtn) {
             mainMenuBtn.addEventListener('click', onMainMenu);
         }
-        
+
+        const togglePoliticalBtn = document.getElementById('togglePoliticalBtn');
+        if (togglePoliticalBtn && onTogglePolitical) {
+            togglePoliticalBtn.addEventListener('click', onTogglePolitical);
+        }
+
         this.setupKeyboardShortcuts(onTogglePause, onSetSpeed, onSelectProvince);
-        
+
         console.log("UI setup completed successfully");
     }
 

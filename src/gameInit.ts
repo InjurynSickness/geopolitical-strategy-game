@@ -158,6 +158,21 @@ export function initializeFullGame(): void {
                     provinceMap.setSelectedCountry(provinceId);
                 }
                 uiManager.updateCountryInfo(provinceId, provinceToCountryMap);
+            },
+            () => {
+                // Toggle political colors
+                if (provinceMap) {
+                    provinceMap.togglePoliticalColors();
+                    const opacity = provinceMap.getPoliticalOpacity();
+                    const textElement = document.getElementById('togglePoliticalText');
+                    const btnElement = document.getElementById('togglePoliticalBtn');
+                    if (textElement) {
+                        textElement.textContent = opacity > 0 ? 'Political View' : 'Terrain View';
+                    }
+                    if (btnElement) {
+                        (btnElement as HTMLElement).style.background = opacity > 0 ? '#d4af37' : '#555';
+                    }
+                }
             }
         );
         console.log('UI manager setup complete');
@@ -242,6 +257,14 @@ function createGameUI(): void {
                 <button id="speed4" class="speed-cube" style="padding: 8px 12px; background: #555; color: white; border: none; border-radius: 4px; cursor: pointer;">4x</button>
                 <button id="speed5" class="speed-cube" style="padding: 8px 12px; background: #555; color: white; border: none; border-radius: 4px; cursor: pointer;">5x</button>
             </div>
+        </div>
+
+        <!-- Map View Controls -->
+        <div id="mapViewControls" style="position: absolute; top: 60px; left: 20px; background: rgba(0,0,0,0.9); padding: 10px; border-radius: 8px; pointer-events: auto;">
+            <button id="togglePoliticalBtn" style="padding: 8px 16px; background: #555; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                <span>🗺️</span>
+                <span id="togglePoliticalText">Terrain View</span>
+            </button>
         </div>
 
         <!-- Country Info Panel -->

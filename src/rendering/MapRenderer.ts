@@ -6,6 +6,7 @@ import { logger } from '../utils/Logger.js';
 
 export class MapRenderer {
     private terrainDebugLogged = false;
+    private politicalOpacity: number = 0.0; // Default: terrain only (0 = hidden, 1 = full)
 
     constructor(
         private canvasManager: CanvasManager,
@@ -13,33 +14,17 @@ export class MapRenderer {
     ) {}
 
     /**
-     * Calculate political color opacity based on zoom level (HOI4 style)
-     * - Zoomed in (high zoom): 0% opacity (only borders visible, terrain primary)
-     * - Zoomed out (low zoom): High opacity (political overview)
+     * Set the political colors opacity (0 = hidden/terrain only, 1 = full political colors)
      */
-    private calculatePoliticalOpacity(): number {
-        const camera = this.cameraController.camera;
-        const zoom = camera.zoom;
-        const minZoom = camera.minZoom;
-        const maxZoom = camera.maxZoom;
+    public setPoliticalOpacity(opacity: number): void {
+        this.politicalOpacity = Math.max(0, Math.min(1, opacity));
+    }
 
-        // Define zoom thresholds for political color visibility
-        // At max zoom (zoomed in): completely transparent (0.0)
-        // At min zoom (zoomed out): highly visible (0.7)
-        const zoomFadeStart = minZoom * 3; // Start fading in political colors
-        const zoomFadeEnd = minZoom * 1.2;   // Fully visible political colors
-
-        if (zoom >= zoomFadeStart) {
-            // Zoomed in: no political colors, only terrain + borders
-            return 0.0;
-        } else if (zoom <= zoomFadeEnd) {
-            // Zoomed out: full political color tint (light overlay)
-            return 1.0;
-        } else {
-            // Interpolate between zoomed in and zoomed out
-            const t = (zoom - zoomFadeEnd) / (zoomFadeStart - zoomFadeEnd);
-            return 1.0 * (1 - t); // Fade from 1.0 to 0.0
-        }
+    /**
+     * Get the current political colors opacity
+     */
+    public getPoliticalOpacity(): number {
+        return this.politicalOpacity;
     }
 
     public render(): void {
@@ -89,14 +74,12 @@ export class MapRenderer {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(this.canvasManager.processedTerrainCanvas, 0, 0);
 
-        // LAYER 3: Draw political colors (HOI4 ZOOM-BASED RENDERING)
-        // Zoomed in: 0% opacity (invisible, only borders visible)
-        // Zoomed out: 100% opacity (political overview with light tint)
-        // Using source-over instead of multiply to avoid darkening/fog effect
-        const politicalOpacity = this.calculatePoliticalOpacity();
-        if (politicalOpacity > 0) {
+        // LAYER 3: Draw political colors (TOGGLEABLE OVERLAY)
+        // Controlled by UI toggle button - terrain is always visible beneath
+        // 0% opacity: pure terrain view, 100% opacity: political country colors
+        if (this.politicalOpacity > 0) {
             ctx.globalCompositeOperation = 'source-over';
-            ctx.globalAlpha = politicalOpacity;
+            ctx.globalAlpha = this.politicalOpacity;
             ctx.drawImage(this.canvasManager.politicalCanvas, 0, 0);
             ctx.globalAlpha = 1.0;
         }

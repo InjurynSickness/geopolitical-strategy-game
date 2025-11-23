@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.join(__dirname, '..');
 
-const DEFINITION_CSV = path.join(projectRoot, 'definition.csv');
+const DEFINITION_CSV = path.join(projectRoot, 'map-data/definition.csv');
 const OUTPUT_PATH = path.join(projectRoot, 'src', 'waterProvinces.ts');
 
 // Parse definition.csv to get all water provinces
