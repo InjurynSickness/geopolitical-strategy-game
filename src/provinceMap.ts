@@ -255,6 +255,16 @@ export class ProvinceMap {
             () => {
                 logger.info('ProvinceMap', '✅ HOI4 terrain renderer ready');
                 onAssetLoad('HOI4 Terrain Atlas System');
+
+                // If map has already been rendered with fallback terrain, re-process with HOI4 terrain
+                if (this.mapReady) {
+                    logger.info('ProvinceMap', '🔄 Switching from fallback terrain to HOI4 terrain atlas...');
+                    this.processTerrainImage();
+                    this.buildPoliticalMap();
+                    this.drawOverlays();
+                    this.requestRender();
+                    logger.info('ProvinceMap', '✅ Map updated with HOI4 terrain atlas');
+                }
             }
         );
         this.hoi4TerrainRenderer.load().catch((error) => {
