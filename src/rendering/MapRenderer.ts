@@ -6,7 +6,7 @@ import { logger } from '../utils/Logger.js';
 
 export class MapRenderer {
     private terrainDebugLogged = false;
-    private politicalOpacity: number = 0.0; // Default: terrain only (0 = hidden, 1 = full)
+    private politicalOpacity: number = 0.65; // Default: 65% political colors, 35% terrain (optimal visibility)
 
     constructor(
         private canvasManager: CanvasManager,
